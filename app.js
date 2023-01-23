@@ -17,7 +17,7 @@ app.post("/register.html", async(req,res)=>{
             users.push({ 
                 id: Date.now().toString(),
                 email: req.body.email,
-                password:   ,
+                password: newpassword,
             })
             console.log(users); 
             res.redirect("/adminlogin")
