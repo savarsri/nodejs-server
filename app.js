@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 // const { MongoUnexpectedServerResponseError } = require("mongodb");
 
 app.engine('html', require('ejs').renderFile);
