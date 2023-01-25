@@ -3,6 +3,7 @@ const app = express();
 const bcrypt = require("bcryptjs");
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const mongoose = require("mongoose");
 // const { MongoUnexpectedServerResponseError } = require("mongodb");
 let PORT = process.env.PORT || 8080;
 app.engine('html', require('ejs').renderFile);
@@ -88,3 +89,9 @@ app.get("/register.html", function(req, res){
 app.listen(PORT, function () {
     console.log("Server is running on localhost:8080");
 });
+
+// Connect to DB
+
+mongoose.connect("mongodb://192.168.1.158/27017", {useNewUrlParser: true, useUnifiedTpoplogy: true}, () => {
+    console.log("Connection successfull!");
+})
