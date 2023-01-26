@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require("mongoose");
 // const { MongoUnexpectedServerResponseError } = require("mongodb");
 let PORT = process.env.PORT || 8080;
+let DB_CONNECTION = process.env.DB_CONNECTION || "localhost:27017";
 app.engine('html', require('ejs').renderFile);
 dotenv.config();
 const saltRounds=10;
@@ -91,7 +92,7 @@ app.listen(PORT, function () {
 });
 
 // Connect to DB
-
-mongoose.connect("mongodb://192.168.1.158/27017", {useNewUrlParser: true, useUnifiedTpoplogy: true}, () => {
+mongoose.set("strictQuery", false);
+mongoose.connect(DB_CONNECTION, {useNewUrlParser: true, useUnifiedTpoplogy: true}, () => {
     console.log("Connection successfull!");
 })
