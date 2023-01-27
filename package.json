@@ -1,22 +1,21 @@
 {
+  "name": "nodejs-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "devStart": "nodemon app.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "aarush",
+  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
-    "cookie-parser": "^1.4.6",
-    "dotenv": "^16.0.3",
-    "ejs": "^3.1.8",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "mongodb": "^4.13.0",
-    "mongoose": "^6.8.4",
+    "mongoose": "^6.9.0",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1"
-  },
-  "devDependencies": {
+    "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.20"
   }
 }

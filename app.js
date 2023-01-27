@@ -1,54 +1,35 @@
-const express = require("express");
-const app = express();
-const bcrypt = require("bcryptjs");
-const dotenv = require('dotenv');
-const jwt = require('jsonwebtoken');
-const mongoose = require("mongoose");
+const express = require('express')
+const mongoose = require('mongoose')
+const morgan = require('morgan')
+const bodyParser = require('body-parser')
 
-let PORT = process.env.PORT || 8080;
-let DB_CONNECTION = process.env.DB_CONNECTION || "localhost:27017";
-app.engine('html', require('ejs').renderFile);
-dotenv.config();
-const saltRounds=10;
-const users=[]
-app.use(express.urlencoded({extended: false}))
+const EmployeeRoute = require('./routes/employee')
+const AuthRoute = require('./routes/auth')
 
-app.post("/register.html", async(req,res)=>{
 
-    try{
-        // const hashedpassword= bcrypt.hash(req.body.password, (err,users))
-        bcrypt.hash(req.body.password, saltRounds, function(err, newpassword) {
-            // Store hash in database here
-            users.push({ 
-                id: Date.now().toString(),
-                email: req.body.email,
-                password: newpassword,
-            })
-            console.log(users); 
-            res.redirect("/adminlogin")
-        });
-    } catch(e){
-        console.log(e);
-        res.redirect('/register.html')
-    }
-
-})
-
-app.get("/adminlogin", function (req, res) {
-    res.render(__dirname + '/index.html')
-
-});
-
-app.get("/register.html", function(req, res){
-    res.render(__dirname + '/register.html')
-})
-
-app.listen(PORT, function () {
-    console.log("Server is running on localhost:8080");
-});
-
-// Connect to DB
 mongoose.set("strictQuery", false);
-mongoose.connect(DB_CONNECTION, {useNewUrlParser: true, useUnifiedTpoplogy: true}, () => {
-    console.log("Connection successfull!");
+mongoose.connect('mongodb://192.168.1.158:27017/testdb', {useNewUrlParser: true, useUnifiedTopology: true})
+const db = mongoose.connection
+
+db.on('error', (err) => {
+    console.log(err)
 })
+
+db.once('open', () => {
+    console.log('database connection done')
+})
+
+const app = express()
+
+app.use(morgan('dev'))
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json())
+app.use('/uploads', express.static('uploads'))
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, ()=>{
+    console.log('server is running on port 3000')
+})
+
+app.use('/api/employee', EmployeeRoute)
+app.use('/api', AuthRoute)
