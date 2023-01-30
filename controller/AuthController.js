@@ -31,7 +31,6 @@ const register = (req, res, next) => {
    
 }
 
-
 const login = (req, res, next) => {
     var username = req.body.username
     var password = req.body.password
@@ -46,7 +45,7 @@ const login = (req, res, next) => {
                         })
                     }
                     if(result){
-                        let token = jwt.sign({name:user.name}, 'verySecretValue', {expiresIn: '1h'})
+                        let token = jwt.sign({name:user.name}, 'AzQPI!', {expiresIn: '1h'})
                         res.json({
                             message: ' login successful',
                             token
