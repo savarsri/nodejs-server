@@ -35,7 +35,7 @@ const login = (req, res, next) => {
     var username = req.body.username
     var password = req.body.password
 
-    User.findOneAndDelete({$or: [{email:username}, {phone:username}]})
+    User.findOne({$or: [{email:username}, {phone:username}]})
     .then(user => {
     if(user){
                 bcrypt.compare(password, user.password, function(err, result){
@@ -47,17 +47,20 @@ const login = (req, res, next) => {
                     if(result){
                         let token = jwt.sign({name:user.name}, 'AzQPI!', {expiresIn: '1h'})
                         res.json({
-                            message: ' login successful',
+                            code: 200,
+                            message: 'login successful',
                             token
                         })
                     }else{
                         res.json({
+                            code: 401,
                             message: 'password does not match'
                         })
                     }
                 })
     }else{
         res.json({
+            code: 404,
             message: 'no user found'
         })
     }
