@@ -18,11 +18,13 @@ const register = (req, res, next) => {
         user.save()
         .then(user => {
             res.json({
+                code: 200,
                 message: "user added successfully"
             })
         })
         .catch(error => {
             res.json({
+                code: 406,
                 message: 'error occured'
             })
         })
