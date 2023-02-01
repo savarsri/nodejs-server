@@ -48,20 +48,20 @@ const login = (req, res, next) => {
                     }
                     if(result){
                         let token = jwt.sign({name:user.name}, 'AzQPI!', {expiresIn: '1h'})
-                        res.json({
-                            code: 200,
+                        res.status(200).json({
+                            status:"ok",
+                            code:200,
                             message: 'login successful',
-                            token
-                        })
+                            token});
                     }else{
-                        res.json({
+                        res.status(401).json({
                             code: 401,
                             message: 'password does not match'
                         })
                     }
                 })
     }else{
-        res.json({
+        res.status(404).json({
             code: 404,
             message: 'no user found'
         })
