@@ -39,33 +39,39 @@ const login = (req, res, next) => {
 
     User.findOne({$or: [{email:username}, {phone:username}]})
     .then(user => {
-    if(user){
-                bcrypt.compare(password, user.password, function(err, result){
-                    if(err){
-                        res.json({
-                            error: err
-                        })
-                    }
-                    if(result){
-                        let token = jwt.sign({name:user.name}, 'AzQPI!', {expiresIn: '1h'})
-                        res.status(200).json({
-                            status:"ok",
-                            code:200,
-                            message: 'login successful',
-                            token});
-                    }else{
-                        res.status(401).json({
-                            code: 401,
-                            message: 'password does not match'
-                        })
-                    }
-                })
-    }else{
-        res.status(404).json({
-            code: 404,
-            message: 'no user found'
-        })
-    }
+        if(user){
+                    bcrypt.compare(password, user.password, function(err, result){
+                        if(err){
+                            res.json({
+                                error: err
+                            })
+                        }
+                        if(result){
+                            let token = jwt.sign({name:user.name}, 'AzQPI!', {expiresIn: '1h'})
+                            res.status(200).json({
+                                status:"ok",
+                                code:200,
+                                message: 'login successful',
+                                token});
+                        }else{
+                            res.status(200).json({
+                                code: 401,
+                                message: 'password does not match'
+                            })
+                        }
+                    })
+        }else{
+            res.status(200).json({
+                code: 404,
+                message: 'no user found'
+            })
+        }
+    })
+    .catch(error=>{
+        res.status(500).json(
+            {code: 500,
+            message: error}
+        )
     })
 }
 
