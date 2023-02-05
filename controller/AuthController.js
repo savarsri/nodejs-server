@@ -25,7 +25,7 @@ const register = (req, res, next) => {
         })
         .catch(error => {
             res.status(500).json({
-                code: 406,
+                code: 500,
                 error,
                 message: 'error occured'
             })
@@ -36,10 +36,10 @@ const register = (req, res, next) => {
 }
 
 const login = (req, res, next) => {
-    var username = req.body.username
+    var email = req.body.email
     var password = req.body.password
 
-    User.findOne({$or: [{email:username}, {phone:username}]})
+    User.findOne({$or: [{email:email}, {phone:email}]})
     .then(user => {
         if(user){
                     bcrypt.compare(password, user.password, function(error, result){
@@ -65,7 +65,7 @@ const login = (req, res, next) => {
             res.status(200).json({
                 code: 404,
                 message: 'no user found'
-            })
+            });
         }
     })
     .catch(error=>{
@@ -73,7 +73,8 @@ const login = (req, res, next) => {
             code: 500,
             error,
             message: "Try again"
-        })
+        });
+        
     })
 }
 
