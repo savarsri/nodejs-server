@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const EmployeeRoute = require('./routes/employee')
 const AuthRoute = require('./routes/auth')
+const TeamsRoute = require('./routes/teams')
 
 
 mongoose.set("strictQuery", false);
@@ -30,5 +31,5 @@ app.listen(PORT, ()=>{
     console.log('server is running on port 3000')
 })
 
-app.use('/api/employee', EmployeeRoute)
+app.use('/api/teams', TeamsRoute)
 app.use('/api', AuthRoute)
