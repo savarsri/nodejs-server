@@ -10,10 +10,10 @@ const createTeams = (req , res, next) => {
         createdBy: req.body.createdBy,
     })
     team.save()
-        .then(user => {
+        .then(team => {
             res.status(200).json({
                 code: 200,
-                user,
+                team,
                 message: "Team created successfully"
             })
         })

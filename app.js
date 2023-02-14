@@ -2,10 +2,8 @@ const express = require('express')
 const mongoose = require('mongoose')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
-const EmployeeRoute = require('./routes/employee')
 const AuthRoute = require('./routes/auth')
 const TeamsRoute = require('./routes/teams')
-
 
 mongoose.set("strictQuery", false);
 mongoose.connect('mongodb://192.168.1.158:27017/testdb', {useNewUrlParser: true, useUnifiedTopology: true})
@@ -32,4 +30,4 @@ app.listen(PORT, ()=>{
 })
 
 app.use('/api/teams', TeamsRoute)
-app.use('/api', AuthRoute)
+app.use('/api/auth', AuthRoute)
