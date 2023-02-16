@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const morgan = require('morgan')
+const path = require('path');
 const bodyParser = require('body-parser')
 const AuthRoute = require('./routes/auth')
 const TeamsRoute = require('./routes/teams')
@@ -28,6 +29,10 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, ()=>{
     console.log('server is running on port 3000')
 })
+
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname, './admin-panel/login.html'));
+});
 
 app.use('/api/teams', TeamsRoute)
 app.use('/api/auth', AuthRoute)
