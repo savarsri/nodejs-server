@@ -28,7 +28,6 @@ const register = async (req, res) => {
         .then((user) => {
           res.status(200).json({
             code: 200,
-            user,
             message: "user added successfully",
           });
         })
@@ -45,7 +44,6 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   let email = req.body.email;
-
   await User.findOne({ email })
     .then((user) => {
       if (user) {
