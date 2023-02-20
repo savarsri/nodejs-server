@@ -61,7 +61,7 @@ const login = async (req, res) => {
             let refreshtoken = jwt.sign({ name: user.employeeID }, 'secretrefreshtoken', {expiresIn: "24h"});
             res.status(200).json({
               code: 200,
-              message: "login successful",
+              message: "login successful.",
               token,
               refreshtoken
             });
