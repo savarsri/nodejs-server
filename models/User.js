@@ -19,6 +19,10 @@ const userSchema = new Schema({
         type:String,
         required: true,
     },
+    teams: {
+        type: [mongoose.SchemaTypes.ObjectId],
+        ref: "Team",
+    }
 }, {timestamps: true})
 
 const User = mongoose.model('User', userSchema)

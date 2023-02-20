@@ -1,14 +1,13 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const morgan = require('morgan')
+const path = require('path');
 const bodyParser = require('body-parser')
-
-const EmployeeRoute = require('./routes/employee')
 const AuthRoute = require('./routes/auth')
-
+const TeamsRoute = require('./routes/teams')
 
 mongoose.set("strictQuery", false);
-mongoose.connect('mongodb://127.0.0.1:27017/testdb', {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect('mongodb://192.168.1.158:27017/testdb', {useNewUrlParser: true, useUnifiedTopology: true})
 const db = mongoose.connection
 
 db.on('error', (err) => {
@@ -31,5 +30,9 @@ app.listen(PORT, ()=>{
     console.log('server is running on port 3000')
 })
 
-app.use('/api/employee', EmployeeRoute)
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname, './admin-panel/login.html'));
+});
+
+app.use('/api/teams', TeamsRoute)
 app.use('/api/auth', AuthRoute)
