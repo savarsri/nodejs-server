@@ -50,20 +50,20 @@ const login = async (req, res) => {
         let password = req.body.password;
         bcrypt.compare(password, user.password, function (error, result) {
           if (error) {
-            delete(password);
+            delete (password);
             res.json({
               error,
             });
           }
           if (result) {
-            delete(password);
-            let token = jwt.sign({ name: user.name }, "AzQPI!", {
-              expiresIn: "1h",
-            });
+            delete (password);
+            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "1h"});
+            let refreshtoken = jwt.sign({ name: user.employeeID }, 'secretrefreshtoken', {expiresIn: "24h"});
             res.status(200).json({
               code: 200,
               message: "login successful",
               token,
+              refreshtoken
             });
           } else {
             res.status(200).json({

@@ -1,9 +1,9 @@
 const express = require('express')
 const Employee = require('../models/Employee')
-
+const User = require('../models/User')
 //show list
 const index= (req,res, next) => {
-    Employee.find()
+    User.find()
     .then(response => {
         res.json({
             response
@@ -18,7 +18,7 @@ const index= (req,res, next) => {
 //show employee by id
 const show = (req,res,next) => {
     let employeeID = req.body.employeeID
-    Employee.findById(employeeID)
+    User.findById(employeeID)
     .then(response=> {
         res.json({
             response
