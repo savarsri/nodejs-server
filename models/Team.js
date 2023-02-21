@@ -15,6 +15,7 @@ const assignmentSchema = new Schema({
         required: true,
     },
     createdAt: {
+        type: Date,
         required:true,
         immutable: true,
         default: () => Date.now(),
@@ -35,7 +36,11 @@ const assignmentSchema = new Schema({
     },
     grade: {
         type: Number,
-    }
+    },
+    returnedGrade: [{
+        user: mongoose.SchemaTypes.ObjectId,
+        grade: Number,
+    }]
     
 })
 
@@ -55,8 +60,7 @@ const teamSchema = new Schema({
     },
     code: {
         type: String,
-        maxLength: 6,
-        minLength: 6,
+        length: 6,
         required: true,
         immutable: true
     },
@@ -65,7 +69,10 @@ const teamSchema = new Schema({
         required: true,
         ref: "User",
     },
-    channels: {type: [String],},
+    channels: {
+        type: [String],
+        default: ["General"],
+    },
     members: {
         type: [mongoose.SchemaTypes.ObjectId],
         ref: "User",

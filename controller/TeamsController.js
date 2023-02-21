@@ -1,13 +1,15 @@
 const Team = require('../models/Team')
 
 const getTeams = (req , res, next) => {
-
+    
 }
 
-const createTeams = (req , res, next) => {
+const createTeams = (req , res) => {
     let team = new Team({
         name: req.body.name,
-        createdBy: req.body.createdBy,
+        createdBy: req.body.uid,
+        admin: req.body.uid,
+        code: req.body.code,
     })
     team.save()
         .then(team => {
@@ -16,18 +18,35 @@ const createTeams = (req , res, next) => {
                 team,
                 message: "Team created successfully"
             })
+            delete(team);
         })
         .catch(error => {
+            console.log(error);
             res.status(500).json({
                 code: 500,
                 error,
                 message: 'error occured'
             })
+            delete(team);
         })
 }
 
-const joinTeams = (req , res, next) => {
+const joinTeam = (req , res) => {
     
 }
 
-module.exports = {getTeams,joinTeams,createTeams}
+const getTeamDetails = (req,res)=>{
+
+}
+
+const getTeamAssignments = (req,res)=>{
+
+}
+
+const getTeamFiles = (req,res) => {
+
+}
+
+
+
+module.exports = {getTeams,joinTeam,createTeams,getTeamDetails,getTeamAssignments,getTeamFiles}
