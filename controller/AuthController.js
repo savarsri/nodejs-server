@@ -57,7 +57,7 @@ const login = async (req, res) => {
           }
           if (result) {
             delete (password);
-            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "1h"});
+            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "30s"});
             let refreshtoken = jwt.sign({ name: user.employeeID }, 'secretrefreshtoken', {expiresIn: "24h"});
             res.status(200).json({
               code: 200,
