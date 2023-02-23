@@ -20,8 +20,7 @@ const userSchema = new Schema({
         required: true,
     },
     teams: {
-        type: [mongoose.SchemaTypes.ObjectId],
-        ref: "Team",
+        type: [String],
     }
 }, {timestamps: true})
 
