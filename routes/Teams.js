@@ -3,7 +3,7 @@ const router = express.Router();
 
 const TeamsController = require('../controller/TeamsController')
 
-router.get('/getTeams', TeamsController.getTeams)
+router.post('/getTeams', TeamsController.getTeams)
 router.post("/createTeams" , TeamsController.createTeams)
 router.post('/joinTeam' , TeamsController.joinTeam)
 router.post('/teamDetails' , TeamsController.getTeamDetails)
