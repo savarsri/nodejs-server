@@ -44,6 +44,37 @@ const assignmentSchema = new Schema({
     
 })
 
+const postSchema = new Schema({
+    content: {
+        type: String,
+        required: true,
+    },
+    channel: {
+        type: String,
+        required: true,
+    },
+    attachments:{
+        name: String,
+        fileType: String,
+        size: Number,
+    },
+    createdBy: {
+        type: mongoose.SchemaTypes.ObjectId,
+        required: true,
+        ref: "User",
+        immutable: true,
+    },
+},{timestamps: true})
+
+const channelSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    posts: [postSchema],
+    
+})
+
 const teamSchema = new Schema({
     name: {
         type: String,
@@ -69,10 +100,7 @@ const teamSchema = new Schema({
         required: true,
         ref: "User",
     },
-    channels: {
-        type: [String],
-        default: ["General"],
-    },
+    channels: [channelSchema],
     members: {
         type: [mongoose.SchemaTypes.ObjectId],
         ref: "User",
