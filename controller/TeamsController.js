@@ -4,6 +4,9 @@ const User = require("../models/User");
 const getTeams = async (req, res) => {
   let uid = req.body.uid;
   let userTeamsID = [];
+
+  // Find list of objectID's of teams the user is in
+
   await User.findById(uid)
     .then((user) => {
       userTeamsID = user.teams;
@@ -12,7 +15,9 @@ const getTeams = async (req, res) => {
       console.log(error);
     });
 
-  Team.find(
+    // Fetchs and sends Team details (name,code,channels)
+
+  await Team.find(
     {
       _id: {
         $in: userTeamsID,

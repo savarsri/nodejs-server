@@ -3,6 +3,8 @@ const router = express.Router();
 
 const TeamsController = require('../controller/TeamsController')
 
+// Teams functions router set-up 
+
 router.post('/getTeams', TeamsController.getTeams)
 router.post("/createTeams" , TeamsController.createTeams)
 router.post('/joinTeam' , TeamsController.joinTeam)

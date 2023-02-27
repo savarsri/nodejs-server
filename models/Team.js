@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+// Assignment Schema defined for Team
+
 const assignmentSchema = new Schema({
     name: {
         type: String,
@@ -44,6 +46,8 @@ const assignmentSchema = new Schema({
     
 })
 
+// Post Schema defined for Team
+
 const postSchema = new Schema({
     content: {
         type: String,
@@ -66,14 +70,18 @@ const postSchema = new Schema({
     },
 },{timestamps: true})
 
+// Channel Schema defined for Team
+
 const channelSchema = new Schema({
     name: {
         type: String,
         required: true,
     },
     posts: [postSchema],
-    
+
 })
+
+// Team schema defined
 
 const teamSchema = new Schema({
     name: {
