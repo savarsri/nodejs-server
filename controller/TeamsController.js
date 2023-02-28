@@ -1,5 +1,6 @@
 const Team = require("../models/Team");
 const User = require("../models/User");
+const Assignment = require("../models/Assignment");
 
 const getTeams = async (req, res) => {
   let uid = req.body.uid;
@@ -15,7 +16,7 @@ const getTeams = async (req, res) => {
       console.log(error);
     });
 
-    // Fetchs and sends Team details (name,code,channels)
+  // Fetchs and sends Team details (name,code,channels)
 
   await Team.find(
     {
@@ -23,12 +24,12 @@ const getTeams = async (req, res) => {
         $in: userTeamsID,
       },
     },
-    'name code channels -_id',
+    "name code channels -_id",
     function (err, docs) {
-      if(err){
+      if (err) {
         res.status(500).json({
           error: "Error getting teams!",
-        })
+        });
         return;
       }
       console.log(docs);
@@ -79,49 +80,73 @@ const joinTeam = (req, res) => {
 const getTeamDetails = (req, res) => {
   let uid = req.body.uid;
   let code = req.body.code;
-  User.findById(uid).then((user)=>{
-      Team.findOne({code},'name code channels admin members id',function (err, docs) {
-        if(err){
+  User.findById(uid).then((user) => {
+    Team.findOne(
+      { code },
+      "name code channels admin members id",
+      function (err, docs) {
+        if (err) {
           res.status(500).json({
             error: "Error getting teams!",
-          })
+          });
           return;
         }
-        if(!user.teams.includes(docs.id,0)){
+        if (!user.teams.includes(docs.id, 0)) {
           return;
         }
-        if(!(docs.admin.includes(user.id,0) || docs.members.includes(user.id,0))){
+        if (
+          !(
+            docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0)
+          )
+        ) {
           return;
         }
         res.status(200).json(docs);
-      })
-  })
+      }
+    );
+  });
 };
 
 const getTeamAssignments = (req, res) => {
-
   let uid = req.body.uid;
   let code = req.body.code;
 
-  User.findById(uid).then((user)=>{
-    Team.findOne({code},'id admin members assignment',function (err, docs) {
-      if(err){
+  User.findById(uid).then((user) => {
+    Team.findOne({ code }, "id admin members assignment", function (err, docs) {
+      if (err) {
         res.status(500).json({
           error: "Error getting teams!",
-        })
+        });
         return;
       }
-      if(!user.teams.includes(docs.id,0)){
+      if (!user.teams.includes(docs.id, 0)) {
         return;
       }
-      if(!(docs.admin.includes(user.id,0) || docs.members.includes(user.id,0))){
+      if (
+        !(docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0))
+      ) {
         return;
       }
-      let assignments = docs.assignment
-      res.status(200).json(assignments.name,assignments.dueDate);
-    })
-})
-
+      let assignments = docs.assignment;
+      Assignment.find(
+        {
+          _id: {
+            $in: assignments,
+          },
+        },
+        "title dueDate -_id",
+        function (err, docs) {
+          if (err) {
+            res.status(500).json({
+              error: "Error getting teams!",
+            });
+            return;
+          }
+          res.status(200).json(docs);
+        }
+      );
+    });
+  });
 };
 
 const getTeamFiles = (req, res) => {};
