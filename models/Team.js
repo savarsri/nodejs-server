@@ -14,7 +14,6 @@ const assignmentSchema = new Schema({
         type: String,
         maxLength: 250,
         minLength: 0,
-        required: true,
     },
     createdAt: {
         type: Date,
@@ -24,16 +23,17 @@ const assignmentSchema = new Schema({
     },
     dueDate: {
         type: Date,
+        default: () => Date.now(),
         required: true,
     },
     submittedBy: {
         type: [mongoose.SchemaTypes.ObjectId],
-        required: true,
+        // required: true,
         ref: "User",
     },
     notSubmittedBy: {
         type: [mongoose.SchemaTypes.ObjectId],
-        required: true,
+        // required: true,
         ref: "User",
     },
     grade: {

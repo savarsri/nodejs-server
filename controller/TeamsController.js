@@ -76,9 +76,53 @@ const joinTeam = (req, res) => {
   });
 };
 
-const getTeamDetails = (req, res) => {};
+const getTeamDetails = (req, res) => {
+  let uid = req.body.uid;
+  let code = req.body.code;
+  User.findById(uid).then((user)=>{
+      Team.findOne({code},'name code channels admin members id',function (err, docs) {
+        if(err){
+          res.status(500).json({
+            error: "Error getting teams!",
+          })
+          return;
+        }
+        if(!user.teams.includes(docs.id,0)){
+          return;
+        }
+        if(!(docs.admin.includes(user.id,0) || docs.members.includes(user.id,0))){
+          return;
+        }
+        res.status(200).json(docs);
+      })
+  })
+};
 
-const getTeamAssignments = (req, res) => {};
+const getTeamAssignments = (req, res) => {
+
+  let uid = req.body.uid;
+  let code = req.body.code;
+
+  User.findById(uid).then((user)=>{
+    Team.findOne({code},'id admin members assignment',function (err, docs) {
+      if(err){
+        res.status(500).json({
+          error: "Error getting teams!",
+        })
+        return;
+      }
+      if(!user.teams.includes(docs.id,0)){
+        return;
+      }
+      if(!(docs.admin.includes(user.id,0) || docs.members.includes(user.id,0))){
+        return;
+      }
+      let assignments = docs.assignment
+      res.status(200).json(assignments.name,assignments.dueDate);
+    })
+})
+
+};
 
 const getTeamFiles = (req, res) => {};
 
