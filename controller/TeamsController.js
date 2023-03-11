@@ -49,7 +49,7 @@ const createTeams = (req, res) => {
   team
     .save()
     .then((team) => {
-      User.findByIdAndUpdate(req.body.uid, { $push: { teams: team._id } })
+      User.findByIdAndUpdate(req.body.uid, { $push: { teams: team } })
         .then((data) => {
           // Do something with data
         })
@@ -73,7 +73,7 @@ const joinTeam = (req, res) => {
   let uid = req.body.uid;
   let code = req.body.code;
   Team.findOneAndUpdate({ code }, { $push: { members: uid } }).then((team) => {
-    User.findByIdAndUpdate(uid, { $push: { teams: team._id } });
+    User.findByIdAndUpdate(uid, { $push: { teams: team } });
   });
 };
 

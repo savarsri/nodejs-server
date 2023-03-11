@@ -43,6 +43,7 @@ const assignmentSchema = new Schema({
     },
     grade: {
         type: Number,
+        default: -1,
     },
     returnedGrade: [{
         user: mongoose.SchemaTypes.ObjectId,

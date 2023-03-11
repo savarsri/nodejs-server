@@ -30,6 +30,7 @@ const postSchema = new Schema({
 const channelSchema = new Schema({
     name: {
         type: String,
+        default: "General",
         required: true,
     },
     posts: [postSchema],
