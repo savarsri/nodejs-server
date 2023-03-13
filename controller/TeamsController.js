@@ -2,13 +2,13 @@ const Team = require("../models/Team");
 const User = require("../models/User");
 const Assignment = require("../models/Assignment");
 
-const getTeams = async (req, res) => {
+const getTeams =  async (req, res) => {
   let uid = req.body.uid;
   let userTeamsID = [];
 
   // Find list of objectID's of teams the user is in
 
-  await User.findById(uid)
+   await User.findById(uid)
     .then((user) => {
       userTeamsID = user.teams;
     })
@@ -18,7 +18,9 @@ const getTeams = async (req, res) => {
 
   // Fetchs and sends Team details (name,code,channels)
 
-  await Team.find(
+  console.log(userTeamsID)
+
+  Team.find(
     {
       _id: {
         $in: userTeamsID,
@@ -52,6 +54,9 @@ const createTeams = (req, res) => {
       User.findByIdAndUpdate(req.body.uid, { $push: { teams: team } })
         .then((data) => {
           // Do something with data
+          res.status(200).json({
+            team
+          })
         })
         .catch((error) => {
           // Error handling
