@@ -8,7 +8,7 @@ const importExcelData2MongoDB = (filePath) => {
     sheets: [
       {
         // Excel Sheet Name
-        name: "Users",
+        name: "User",
         // Header Row -> be skipped and will not be present at our result object.
         header: {
           rows: 1,
@@ -24,8 +24,6 @@ const importExcelData2MongoDB = (filePath) => {
   });
   // -> Log Excel Data to Console
   console.log(excelData);
-  const userObject = excelData.User;
-  console.log(userObject);
   /**
     { 
     Customers:
@@ -39,7 +37,7 @@ const importExcelData2MongoDB = (filePath) => {
     }
     */
   // Insert Json-Object to MongoDB
-  User.insertMany(jsonObj, (err, data) => {
+  User.insertMany(excelData, (err, data) => {
     if (err) {
       console.log(err);
     } else {
