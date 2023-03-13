@@ -1,4 +1,5 @@
 const Team = require("../models/Team");
+const Channel = require("../models/Team");
 const User = require("../models/User");
 const Assignment = require("../models/Assignment");
 
@@ -47,6 +48,7 @@ const createTeams = (req, res) => {
     createdBy: uid,
     admin: uid,
     code: req.body.code,
+    channels: [{name: "General"},]
   });
   team
     .save()

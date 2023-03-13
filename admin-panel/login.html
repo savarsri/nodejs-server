@@ -1,10 +1,18 @@
-<body>
-    <h1>Admin Panel</h1>
-    <input type="email" placeholder="Email">
-    <input type="password" placeholder="Password">
-    <button>Sign-in</button>
-    <form action="/action_page.php">
-        <input type="file" id="myFile" name="filename">
-        <input type="submit">
-      </form>
-</body>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin Panel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+      <h1>Admin Panel</h1>
+      <input type="email" placeholder="Email">
+      <input type="password" placeholder="Password">
+      <button>Sign-in</button>
+      <form action="/uploadfile" enctype="multipart/form-data" method="post">
+        <input type="file" name="uploadfile" accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' >
+        <input type="submit" value="Upload Excel">
+      </form> 
+  </body>
+</html>

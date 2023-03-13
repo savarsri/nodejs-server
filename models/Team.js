@@ -31,6 +31,7 @@ const postSchema = new Schema({
 const channelSchema = new Schema({
     name: {
         type: String,
+        default: "General",
         required: true,
     },
     posts: [postSchema],
@@ -74,5 +75,7 @@ const teamSchema = new Schema({
     },
 },{timestamps: true})
 
-const Team = mongoose.model('Team' , teamSchema)
-module.exports = Team
+const Team = mongoose.model('Team' , teamSchema);
+const Channel = mongoose.model('Channel' , channelSchema)
+const Post = mongoose.model('Post' , postSchema)
+module.exports = Team, Channel, Post

@@ -1,28 +1,32 @@
-var excelToJson = require('convert-excel-to-json');
+var excelToJson = require("convert-excel-to-json");
+const User = require("../models/User");
 
-
-function importExcelData2MongoDB(filePath){
-    // -> Read Excel File to Json Data
-    const excelData = excelToJson({
+const importExcelData2MongoDB = (filePath) => {
+  // -> Read Excel File to Json Data
+  const excelData = excelToJson({
     sourceFile: filePath,
-    sheets:[{
-    // Excel Sheet Name
-    name: 'Users',
-    // Header Row -> be skipped and will not be present at our result object.
-    header:{
-    rows: 1
-    },
-    // Mapping columns to keys
-    columnToKey: {
-    A: 'name',
-    B: 'email',
-    C: 'password'
-    }
-    }]
-    });
-    // -> Log Excel Data to Console
-    console.log(excelData);
-    /**
+    sheets: [
+      {
+        // Excel Sheet Name
+        name: "Users",
+        // Header Row -> be skipped and will not be present at our result object.
+        header: {
+          rows: 1,
+        },
+        // Mapping columns to keys
+        columnToKey: {
+          A: "name",
+          B: "email",
+          C: "password",
+        },
+      },
+    ],
+  });
+  // -> Log Excel Data to Console
+  console.log(excelData);
+  const userObject = excelData.User;
+  console.log(userObject);
+  /**
     { 
     Customers:
     [ 
@@ -33,17 +37,16 @@ function importExcelData2MongoDB(filePath){
     { _id: 5, name: 'Jason Bourne', address: 'California', age: 36 } 
     ] 
     }
-    */  
-    // Insert Json-Object to MongoDB
-    userModel.insertMany(jsonObj,(err,data)=>{  
-    if(err){  
-    console.log(err);  
-    }else{  
-    res.redirect('/');  
-    }  
-    }); 
-    fs.unlinkSync(filePath);
+    */
+  // Insert Json-Object to MongoDB
+  User.insertMany(jsonObj, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.redirect("/");
     }
+  });
+  fs.unlinkSync(filePath);
+}
 
-
-    module.export = importExcelData2MongoDB
+module.exports = {importExcelData2MongoDB};
