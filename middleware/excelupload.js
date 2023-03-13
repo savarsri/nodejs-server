@@ -1,3 +1,6 @@
+var excelToJson = require('convert-excel-to-json');
+
+
 function importExcelData2MongoDB(filePath){
     // -> Read Excel File to Json Data
     const excelData = excelToJson({
@@ -41,7 +44,6 @@ function importExcelData2MongoDB(filePath){
     }); 
     fs.unlinkSync(filePath);
     }
-    //assign port  
-    var port = process.env.PORT || 3000;  
-    app.listen(port,()=>console.log('server run at port '+port));  
-    
+
+
+    module.export = importExcelData2MongoDB

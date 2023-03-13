@@ -7,6 +7,18 @@ const AuthRoute = require('./routes/authRoute')
 const TeamsRoute = require('./routes/teamRoute')
 const AssignmentRoute = require('./routes/assignmentRoute');
 const EmployeeRoute = require('./routes/employee')
+const importExcelData2MongoDB = require('./middleware/excelupload')
+
+
+var storage = multer.diskStorage({  
+    destination:(req,file,cb)=>{  
+    cb(null,'./public/uploads');  
+    },  
+    filename:(req,file,cb)=>{  
+    cb(null,file.originalname);  
+    }  
+    });  
+    var uploads = multer({storage:storage});  
 
 // Connection with mongoDB database
 
@@ -44,6 +56,10 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, './admin-panel/login.html'));
 });
 
+app.post('/uploadfile', upload.single("uploadfile"), (req, res) =>{
+    importExcelData2MongoDB(__dirname + '/uploads/' + req.file.filename);
+    console.log(res);
+    }); 
 //Api routes set-up
 
 app.use('/api/teams', TeamsRoute)
