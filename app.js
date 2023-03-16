@@ -11,7 +11,7 @@ const AssignmentRoute = require("./routes/assignmentRoute");
 const PostRoute = require("./routes/postRoute");
 const EmployeeRoute = require("./routes/employee");
 const User = require("./models/User");
-
+// const io = require('socket.io')(http)
 // import {importExcelData2MongoDB} from "./middleware/excelupload"
 
 var storage = multer.diskStorage({
@@ -44,6 +44,7 @@ db.once("open", () => {
 });
 
 const app = express();
+const http = require('http').createServer(app)
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -76,6 +77,20 @@ app.use("/api/assignment", AssignmentRoute);
 app.use("/api/post", PostRoute);
 
 
+// Socket 
+
+
+// io.on('connection', (socket) => {
+//     console.log('Connected...')
+//     socket.on('message', (msg) => {
+//         socket.broadcast.emit('message', msg)
+//     })
+
+// })
+// app.use(express.static(__dirname + "/chat"))
+// app.get('/chat', (req, res) => {
+//   res.sendFile(__dirname +  "/chat/chat.html")
+// })
 
 const importExcelData2MongoDB = (filePath) => {
     // -> Read Excel File to Json Data
