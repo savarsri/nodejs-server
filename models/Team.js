@@ -12,11 +12,11 @@ const postSchema = new Schema({
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
     },
-    attachments:{
+    attachments:[{
         name: String,
         fileType: String,
         size: Number,
-    },
+    }],
     createdBy: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
@@ -31,7 +31,6 @@ const postSchema = new Schema({
 const channelSchema = new Schema({
     name: {
         type: String,
-        default: "General",
         required: true,
     },
     posts: [postSchema],

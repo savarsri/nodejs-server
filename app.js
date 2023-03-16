@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const AuthRoute = require("./routes/authRoute");
 const TeamsRoute = require("./routes/teamRoute");
 const AssignmentRoute = require("./routes/assignmentRoute");
+const PostRoute = require("./routes/postRoute");
 const EmployeeRoute = require("./routes/employee");
 const User = require("./models/User");
 
@@ -72,6 +73,7 @@ app.use("/api/teams", TeamsRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/employee", EmployeeRoute);
 app.use("/api/assignment", AssignmentRoute);
+app.use("/api/post", PostRoute);
 
 
 
