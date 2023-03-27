@@ -5,12 +5,17 @@ const path = require("path");
 const multer = require('multer');
 const excelToJson = require("convert-excel-to-json");
 const bodyParser = require("body-parser");
+const authenticate = require('./middleware/authenticate');
 const AuthRoute = require("./routes/authRoute");
 const TeamsRoute = require("./routes/teamRoute");
 const AssignmentRoute = require("./routes/assignmentRoute");
 const PostRoute = require("./routes/postRoute");
 const EmployeeRoute = require("./routes/employee");
 const User = require("./models/User");
+const cors = require('cors');
+const helmet = require('helmet');
+const xss = require('xss');
+const mongoSanitize = require('mongo-sanitize');
 // const io = require('socket.io')(http)
 // import {importExcelData2MongoDB} from "./middleware/excelupload"
 
@@ -49,6 +54,11 @@ const http = require('http').createServer(app)
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.json());
+// app.use(cors);
+// app.use(helmet);
+// app.use(xss);
+// app.use(mongoSanitize);
 app.use("/uploads", express.static("uploads"));
 const PORT = process.env.PORT || 3000;
 
@@ -70,7 +80,7 @@ app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {
 });
 //Api routes set-up
 
-app.use("/api/teams", TeamsRoute);
+app.use("/api/teams",authenticate, TeamsRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/employee", EmployeeRoute);
 app.use("/api/assignment", AssignmentRoute);
