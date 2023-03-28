@@ -12,11 +12,13 @@ const AssignmentRoute = require("./routes/assignmentRoute");
 const PostRoute = require("./routes/postRoute");
 const EmployeeRoute = require("./routes/employee");
 const User = require("./models/User");
-const cors = require('cors');
-const helmet = require('helmet');
-const xss = require('xss');
-const mongoSanitize = require('mongo-sanitize');
-// const io = require('socket.io')(http)
+const socket = require('socket.io');
+const http = require('http');
+
+// const cors = require('cors');
+// const helmet = require('helmet');
+// const xss = require('xss');
+// const mongoSanitize = require('mongo-sanitize');
 // import {importExcelData2MongoDB} from "./middleware/excelupload"
 
 var storage = multer.diskStorage({
@@ -49,7 +51,7 @@ db.once("open", () => {
 });
 
 const app = express();
-const http = require('http').createServer(app)
+const server = http.createServer(app);
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -89,6 +91,44 @@ app.use("/api/post", PostRoute);
 
 // Socket 
 
+const io = new socket.Server(server, {
+  pingTimeout: 60000,
+  // cors: {
+  //   origin: "*",
+  // },
+});
+
+io.on("connection", (socket) => {
+  //connected to correct id
+  socket.on("setup", (userData) => {
+    socket.join(userData._id);
+
+    socket.emit("connected");
+  });
+
+  socket.on("join-chat", (room) => {
+    socket.join(room);
+  });
+
+  socket.on("typing", (room) => socket.in(room).emit("typing"));
+  socket.on("stop-typing", (room) => socket.in(room).emit("stop-typing"));
+
+  socket.on("new-message", (newMessageReceived) => {
+    let chat = newMessageReceived.chat;
+
+    if (!chat.users) return console.log(`chat.users not defined`);
+
+    chat.users.forEach((user) => {
+      if (user._id === newMessageReceived.sender._id) return;
+
+      socket.in(user._id).emit("message-received", newMessageReceived);
+    });
+  });
+
+  socket.off("setup", () => {
+    socket.leave(userData._id);
+  });
+});
 
 // io.on('connection', (socket) => {
 //     console.log('Connected...')
