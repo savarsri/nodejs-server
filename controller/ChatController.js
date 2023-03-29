@@ -1,10 +1,9 @@
-import { StatusCodes } from "http-status-codes";
 const Chat = require("../models/chat");
 const User = require("../models/User");
 
-import {
-  BadRequestError,
-} from "../errors/index.js";
+// const codes =require("http-status-codes");
+// const StatusCodes = codes.StatusCodes;
+
 
 const getChat = async (req, res) => {
   const { userId } = req.body;
@@ -156,7 +155,7 @@ const removeFromGroup = async (req, res) => {
   }
 };
 
-export {
+module.exports = {
   getChat,
   getChats,
   createGroup,

@@ -168,6 +168,7 @@ const importExcelData2MongoDB = (filePath) => {
       ],
     });
 
+    console.log(excelData[0]);
     const data = Object.values(excelData);
     
     // Insert Json-Object to MongoDB

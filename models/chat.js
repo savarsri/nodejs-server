@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
-const chatSchema = new mongoose.Schema(
+const chatSchema = new Schema(
   {
     chatName: {
       type: String,

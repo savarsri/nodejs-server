@@ -1,9 +1,9 @@
 const Message = require("../models/message");
 const Chat = require("../models/chat");
 const User = require("../models/User");
-import { StatusCodes } from "http-status-codes";
 
-import { BadRequestError } from "../errors/index.js";
+// const codes =require("http-status-codes");
+// const StatusCodes = codes.StatusCodes;
 
 const sendMessage = async (req, res) => {
   const { message, chatId } = req.body;
@@ -42,4 +42,4 @@ const allMessages = async (req, res) => {
   res.status(StatusCodes.OK).json(getMessage);
 };
 
-export { allMessages, sendMessage };
+module.exports = { allMessages, sendMessage };

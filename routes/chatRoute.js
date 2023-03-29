@@ -8,3 +8,5 @@ router.route("/createGroup").post(ChatController.createGroup);
 router.route("/renameGroup").patch(ChatController.renameGroup);
 router.route("/removeFromGroup").patch(ChatController.removeFromGroup);
 router.route("/addUserToGroup").patch(ChatController.addUserToGroup);
+
+module.exports = router
