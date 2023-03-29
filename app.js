@@ -11,6 +11,8 @@ const TeamsRoute = require("./routes/teamRoute");
 const AssignmentRoute = require("./routes/assignmentRoute");
 const PostRoute = require("./routes/postRoute");
 const EmployeeRoute = require("./routes/employee");
+const ChatRoute = require("./routes/chatRoute");
+const MessageRoute = require("./routes/messageRoute");
 const User = require("./models/User");
 const socket = require('socket.io');
 const http = require('http');
@@ -87,6 +89,8 @@ app.use("/api/auth", AuthRoute);
 app.use("/api/employee", EmployeeRoute);
 app.use("/api/assignment", AssignmentRoute);
 app.use("/api/post", PostRoute);
+app.use("/api/chat", ChatRoute);
+app.use("/api/message", MessageRoute);
 
 
 // Socket 
