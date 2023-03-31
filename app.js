@@ -14,6 +14,7 @@ const EmployeeRoute = require("./routes/employee");
 const ChatRoute = require("./routes/chatRoute");
 const MessageRoute = require("./routes/messageRoute");
 const User = require("./models/User");
+const bcrypt = require("bcryptjs");
 const socket = require('socket.io');
 const http = require('http');
 
@@ -146,7 +147,7 @@ io.on("connection", (socket) => {
 //   res.sendFile(__dirname +  "/chat/chat.html")
 // })
 
-const importExcelData2MongoDB = (filePath) => {
+async function importExcelData2MongoDB(filePath){
     // -> Read Excel File to Json Data
     const excelData = excelToJson({
       sourceFile: filePath,
@@ -168,16 +169,42 @@ const importExcelData2MongoDB = (filePath) => {
       ],
     });
 
-    console.log(excelData[0]);
-    const data = Object.values(excelData);
+    const temp = Object.values(excelData);
+    var data = temp[0];
+    delete(temp);
+
+    data = await createHashedPass(data);
     
     // Insert Json-Object to MongoDB
-    User.insertMany(data[0], (err, data) => {
+
+    await addUsers(data);
+    
+    // fs.unlinkSync(filePath);
+  }
+
+async function createHashedPass(data){
+  for (let index = 0; index < data.length; index++) {
+    const pass = bcrypt.hash(data[index].password, 10, function (err, hashedPass) {
       if (err) {
-        console.log(err);
-      } else {
-        res.redirect("/");
+        res.json({
+          error: err,
+        });
+      }else{
+        return hashedPass;
       }
     });
-    fs.unlinkSync(filePath);
+    data[index].password = pass;
   }
+  return data;
+}
+
+async function addUsers(data){
+  User.insertMany(data, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log('hello');
+      // res.redirect("/");
+    }
+  });
+}
