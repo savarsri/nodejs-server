@@ -85,7 +85,7 @@ app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {
 });
 //Api routes set-up
 
-app.use("/api/teams",authenticate, TeamsRoute);
+app.use("/api/teams", TeamsRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/employee", EmployeeRoute);
 app.use("/api/assignment", AssignmentRoute);

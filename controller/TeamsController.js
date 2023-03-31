@@ -27,7 +27,7 @@ const getTeams =  async (req, res) => {
         $in: userTeamsID,
       },
     },
-    "name code channels -_id",
+    "name code -_id",
     function (err, docs) {
       if (err) {
         res.status(500).json({
@@ -41,14 +41,27 @@ const getTeams =  async (req, res) => {
   );
 };
 
+function makeid(length) {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  let counter = 0;
+  while (counter < length) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
+}
+
 const createTeams = (req, res) => {
   let uid = req.body.uid;
+  code = makeid(6);
+  
   let team = new Team({
     name: req.body.name,
     createdBy: uid,
     admin: uid,
-    code: req.body.code,
-    channels: [{name: "General"},]
+    code: code,
   });
   team
     .save()
@@ -56,9 +69,7 @@ const createTeams = (req, res) => {
       User.findByIdAndUpdate(req.body.uid, { $push: { teams: team } })
         .then((data) => {
           // Do something with data
-          res.status(200).json({
-            team
-          })
+          res.status(200)
         })
         .catch((error) => {
           // Error handling
@@ -80,7 +91,17 @@ const joinTeam = (req, res) => {
   let uid = req.body.uid;
   let code = req.body.code;
   Team.findOneAndUpdate({ code }, { $push: { members: uid } }).then((team) => {
-    User.findByIdAndUpdate(uid, { $push: { teams: team } });
+    User.findByIdAndUpdate(uid, { $push: { teams: team } }).then((data)=>{
+      res.status(200);
+    }).catch((error)=>{
+      res.status(500).json({
+        error
+      })
+    });
+  }).catch((error)=>{
+    res.status(500).json({
+      error
+    })
   });
 };
 
@@ -90,7 +111,7 @@ const getTeamDetails = (req, res) => {
   User.findById(uid).then((user) => {
     Team.findOne(
       { code },
-      "name code channels admin members id",
+      "name code admin members id",
       function (err, docs) {
         if (err) {
           res.status(500).json({

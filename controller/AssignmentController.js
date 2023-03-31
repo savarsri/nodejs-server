@@ -126,4 +126,8 @@ const deleteAssignment = (req, res) => {
   });
 };
 
-module.exports = { createAssignment, updateAssignment, deleteAssignment };
+const submitAssignment = (req,res)=>{
+
+}
+
+module.exports = { createAssignment, updateAssignment, deleteAssignment, submitAssignment };

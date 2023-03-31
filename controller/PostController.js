@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const Team = require("../models/Team");
-const Channel = require("../models/Team");
-const Post = require("../models/Team");
+const Post = require("../models/Post");
 
 const createPost = (req,res)=>{
     let uid = req.body.uid;
@@ -17,7 +16,15 @@ const createPost = (req,res)=>{
       });
     
       post.save().then((post)=>{
-
+        Team.findByIdAndUpdate(teamID, { $push: { posts: post } }).then((data)=>{
+          res.status(200).json({
+            message: "Post Created"
+          });
+        }).catch((error)=>{
+          res.status(500).json({
+            error
+          })
+        });
       }).catch((error)=>{
         res.json({
             error
@@ -27,7 +34,15 @@ const createPost = (req,res)=>{
 }
 
 const updatePost = (req,res)=>{
-
+  Post.findByIdAndUpdate(req.body.postID,{content: req.body.content, attachments: req.body.attachments,}).then((post)=>{
+    res.status(200).json({
+      message: "Post updated"
+    })
+  }).catch((error)=>{
+    res.status(500).json({
+      error
+    })
+  })
 }
 
 const deletePost = (req,res)=>{
@@ -36,7 +51,15 @@ const deletePost = (req,res)=>{
         createdBy: req.body.uid,
       })
       .remove()
-      .exec();
+      .exec().then(()=>{
+        res.status(200).json({
+          message: "Deleted Post"
+        })
+      }).catch((error)=>{
+        res.status(500).json({
+          error
+        })
+      });
 }
 
 

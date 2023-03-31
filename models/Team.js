@@ -3,29 +3,29 @@ const Schema = mongoose.Schema
 
 // Post Schema defined for Team
 
-const postSchema = new Schema({
-    content: {
-        type: String,
-        required: true,
-    },
-    attachments:[{
-        name: String,
-        fileType: String,
-        size: Number,
-    }],
-    createdBy: {
-        type: mongoose.SchemaTypes.ObjectId,
-        required: true,
-        ref: "User",
-        immutable: true,
-    },
-    team: {
-        type: mongoose.SchemaTypes.ObjectId,
-        required: true,
-        ref: "Team",
-        immutable: true,
-    }
-},{timestamps: true})
+// const postSchema = new Schema({
+//     content: {
+//         type: String,
+//         required: true,
+//     },
+//     attachments:[{
+//         name: String,
+//         fileType: String,
+//         size: Number,
+//     }],
+//     createdBy: {
+//         type: mongoose.SchemaTypes.ObjectId,
+//         required: true,
+//         ref: "User",
+//         immutable: true,
+//     },
+//     team: {
+//         type: mongoose.SchemaTypes.ObjectId,
+//         required: true,
+//         ref: "Team",
+//         immutable: true,
+//     }
+// },{timestamps: true})
 
 // Team schema defined
 
@@ -69,5 +69,5 @@ const teamSchema = new Schema({
 },{timestamps: true})
 
 const Team = mongoose.model('Team' , teamSchema);
-const Post = mongoose.model('Post' , postSchema)
-module.exports = Team, Post
+// const Post = mongoose.model('Post' , postSchema)
+module.exports = Team
