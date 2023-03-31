@@ -8,10 +8,6 @@ const postSchema = new Schema({
         type: String,
         required: true,
     },
-    channel: {
-        type: mongoose.SchemaTypes.ObjectId,
-        required: true,
-    },
     attachments:[{
         name: String,
         fileType: String,
@@ -23,18 +19,13 @@ const postSchema = new Schema({
         ref: "User",
         immutable: true,
     },
-},{timestamps: true})
-
-
-// Channel Schema defined for Team
-
-const channelSchema = new Schema({
-    name: {
-        type: String,
+    team: {
+        type: mongoose.SchemaTypes.ObjectId,
         required: true,
-    },
-    posts: [postSchema],
-})
+        ref: "Team",
+        immutable: true,
+    }
+},{timestamps: true})
 
 // Team schema defined
 
@@ -63,7 +54,10 @@ const teamSchema = new Schema({
         required: true,
         ref: "User",
     },
-    channels: [channelSchema],
+    posts: {
+        type: [mongoose.SchemaTypes.ObjectId],
+        ref: "Post",
+    },
     members: {
         type: [mongoose.SchemaTypes.ObjectId],
         ref: "User",
@@ -75,6 +69,5 @@ const teamSchema = new Schema({
 },{timestamps: true})
 
 const Team = mongoose.model('Team' , teamSchema);
-const Channel = mongoose.model('Channel' , channelSchema)
 const Post = mongoose.model('Post' , postSchema)
-module.exports = Team, Channel, Post
+module.exports = Team, Post
