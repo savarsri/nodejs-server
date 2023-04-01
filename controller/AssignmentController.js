@@ -115,7 +115,6 @@ const deleteAssignment = (req, res) => {
               res.status(200);
             })
             .catch((error) => {
-              assignment.deleteOne();
               res.status(500).json(error);
             });
         })
@@ -127,7 +126,15 @@ const deleteAssignment = (req, res) => {
 };
 
 const submitAssignment = (req,res)=>{
+  Assignment.findByIdAndUpdate(req.body.assignmentID,{$push:{submittedBy:req.body.uid}})
+}
+
+const unSubmitAssignment = (req,res)=>{
 
 }
 
-module.exports = { createAssignment, updateAssignment, deleteAssignment, submitAssignment };
+const gradeAssignment = (req,res)=>{
+
+}
+
+module.exports = { createAssignment, updateAssignment, deleteAssignment, submitAssignment, unSubmitAssignment, gradeAssignment };

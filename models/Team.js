@@ -47,7 +47,8 @@ const teamSchema = new Schema({
         type: String,
         length: 6,
         required: true,
-        immutable: true
+        immutable: true,
+        unique: true
     },
     admin: {
         type: [mongoose.SchemaTypes.ObjectId],

@@ -3,10 +3,11 @@ const router = express.Router()
 
 const ChatController = require('../controller/ChatController');
 
-router.route("/").post(ChatController.getChat).get(ChatController.getChats);
-router.route("/createGroup").post(ChatController.createGroup);
-router.route("/renameGroup").patch(ChatController.renameGroup);
-router.route("/removeFromGroup").patch(ChatController.removeFromGroup);
-router.route("/addUserToGroup").patch(ChatController.addUserToGroup);
+router.post('/chat', ChatController.getChat);
+router.post('/chats', ChatController.getChats);
+router.post('/createGroup', ChatController.createGroup);
+router.patch('/renameGroup', ChatController.renameGroup);
+router.patch('/removeFromGroup', ChatController.removeFromGroup);
+router.patch('/addUserToGroup', ChatController.addUserToGroup);
 
 module.exports = router

@@ -41,12 +41,12 @@ const getChat = async (req, res) => {
       "-password"
     );
 
-    res.status(StatusCodes.OK).json(fullChat);
+    res.status(200).json(fullChat);
   }
 };
 
 const getChats = async (req, res) => {
-  const chat = await Chat.find({ users: { $elemMatch: { $eq: req.user.id } } })
+  const chat = await Chat.find({ users: { $elemMatch: { $eq: req.body.uid } } })
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate("latestMessage")
@@ -57,7 +57,7 @@ const getChats = async (req, res) => {
     select: "avatar email name _id",
   });
 
-  res.status(StatusCodes.OK).json(user);
+  res.status(200).json(user);
 };
 
 const createGroup = async (req, res) => {
@@ -129,7 +129,7 @@ const addUserToGroup = async (req, res) => {
   if (!addUser) {
     throw new BadRequestError("Chat Not Found");
   } else {
-    res.status(StatusCodes.OK).json(addUser);
+    res.status(200).json(addUser);
   }
 };
 
@@ -151,7 +151,7 @@ const removeFromGroup = async (req, res) => {
   if (!removeUser) {
     throw new BadRequestError("Chat Not Found");
   } else {
-    res.status(StatusCodes.OK).json(removeUser);
+    res.status(200).json(removeUser);
   }
 };
 

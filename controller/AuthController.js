@@ -93,10 +93,10 @@ const searchUser = async (req, res) => {
   const { search } = req.query;
 
   const user = await User.find({
-    username: { $regex: search, $options: "i" },
+    name: { $regex: search, $options: "i" },
   }).select("avatar _id email name");
 
-  res.status(StatusCodes.OK).json(user);
+    res.status(200).json(user);
 };
 
 module.exports = {
