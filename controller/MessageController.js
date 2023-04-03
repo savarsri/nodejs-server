@@ -29,7 +29,7 @@ const sendMessage = async (req, res) => {
 
   await Chat.findByIdAndUpdate(chatId, { latestMessage: m }, { new: true });
 
-  res.status(StatusCodes.OK).json(m);
+  res.status(200).json(m);
 };
 
 const allMessages = async (req, res) => {
@@ -39,7 +39,7 @@ const allMessages = async (req, res) => {
     .populate("sender", "avatar email _id")
     .populate("chat");
 
-  res.status(StatusCodes.OK).json(getMessage);
+  res.status(200).json(getMessage);
 };
 
 module.exports = { allMessages, sendMessage };
