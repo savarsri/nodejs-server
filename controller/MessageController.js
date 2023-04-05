@@ -2,18 +2,17 @@ const Message = require("../models/message");
 const Chat = require("../models/chat");
 const User = require("../models/User");
 
-// const codes =require("http-status-codes");
-// const StatusCodes = codes.StatusCodes;
-
 const sendMessage = async (req, res) => {
   const { message, chatId } = req.body;
 
   if (!message || !chatId) {
-    return BadRequestError("Please Provide All Fields To send Message");
+    res.status(500).json({
+      error: "Chat does not exist!"
+    })
   }
 
   let newMessage = {
-    sender: req.user.id,
+    sender: req.body.uid,
     message: message,
     chat: chatId,
   };
