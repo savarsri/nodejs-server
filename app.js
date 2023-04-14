@@ -174,8 +174,8 @@ async function importExcelData2MongoDB(filePath){
     var data = temp[0];
     delete(temp);
 
-    data = await createHashedPass(data);
-    
+    // data = await createHashedPass(data);
+    console.log(data)
     // Insert Json-Object to MongoDB
 
     await addUsers(data);
