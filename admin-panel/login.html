@@ -10,25 +10,25 @@
   <body>
     
     <!-- <link rel="stylesheet" href="/admin-panel/admin.css"> -->
-    <script type="text/javascript" src="controller/AuthController.js"></script>
+    <script type="text/javascript" src="../routes/authRoute.js"></script>
     <div class="header">ColabSphere</div>
-
+<form action="/dashboard.html">
 <br><br>
     <input type="email" name="name" placeholder="Email" class="question" id="nme" required autocomplete="off" />
     
 <br><br>
-    <input type="password" placeholder="Password" class="question" id="msg" required autocomplete="off" />
+    <input type="password" name="password" placeholder="Password" class="question" id="msg" required autocomplete="off" />
 
 
 <br><br>
-   
-    <a href="" class="bn3637 bn38">Sign-in</a> 
-      <!-- <button>Sign-in</button> -->
-      <!-- <form action="/uploadfile" enctype="multipart/form-data" method="post">
+    <button type="submit">Sign-in</button>
+<!-- <a href="./dashboard.html" class="bn3637 bn38">Sign-in</a>  -->
+    
+
+    </form>
+        <form action="/uploadfile" enctype="multipart/form-data" method="post">
         <input type="file" name="uploadfile" accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' >
-        <input type="submit" value="Upload Excel"> -->
-
-
-      <!-- </form>  -->
+        <input type="submit" value="Upload Excel">
+    </form> 
   </body>
 </html>

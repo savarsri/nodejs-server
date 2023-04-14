@@ -83,7 +83,7 @@ app.get("/", function (req, res) {
 });
 
 app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {
-  importExcelData2MongoDB(__dirname + "/public/uploads/" + req.file.filename);
+  importExcelData2MongoDB(__dirname + "/userlist/uploads/" + req.file.filename);
   console.log(res);
 });
 //Api routes set-up
@@ -213,4 +213,4 @@ async function addUsers(data){
 }
 
 
-// module.exports = {upload, mkdirectory}
+module.exports = {upload, mkdirectory}
