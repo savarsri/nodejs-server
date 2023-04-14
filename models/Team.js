@@ -32,7 +32,7 @@ const Schema = mongoose.Schema
 const teamSchema = new Schema({
     name: {
         type: String,
-        maxLength: 50,
+        maxLength: 30,
         minLength: 1,
         required: true,
         immutable: true,

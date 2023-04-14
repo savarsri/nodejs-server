@@ -2,6 +2,20 @@ const User = require("../models/User");
 const Team = require("../models/Team");
 const Assignment = require("../models/Assignment");
 
+const getAssignment = (req, res) => {
+  let uid = req.body.uid;
+  let assignmentID = req.body.assignmentID;
+  User.findById(uid).then((user) => {
+    Assignment.findById(assignmentID).then((assignment)=>{
+      res.status(200).json({
+        title : assignment.title,
+        description : assignment.description,
+        dueDate : assignment.dueDate,
+      })
+    })
+  });
+};
+
 const createAssignment = (req, res) => {
   let uid = req.body.uid;
   let code = req.body.code;
@@ -73,17 +87,19 @@ const updateAssignment = (req, res) => {
       if (!docs.admin.includes(user.id, 0)) {
         return;
       }
-      
+
       Assignment.findByIdAndUpdate(assignmentId, {
         title: assignmentTitle,
         description: assignmentDescription,
         dueDate: assignmentDueDate,
         grade: assignmentGrade,
-      }).then((docs) => {}).catch((error)=>{
-        res.status(500).json({
-          error: "Error: cannot update assignment"
-        })
-      });
+      })
+        .then((docs) => {})
+        .catch((error) => {
+          res.status(500).json({
+            error: "Error: cannot update assignment",
+          });
+        });
     });
   });
 };
@@ -125,16 +141,25 @@ const deleteAssignment = (req, res) => {
   });
 };
 
-const submitAssignment = (req,res)=>{
-  Assignment.findByIdAndUpdate(req.body.assignmentID,{$push:{submittedBy:req.body.uid}})
-}
+const submitAssignment = (req, res) => {
+  Assignment.findByIdAndUpdate(req.body.assignmentID, {
+    $push: { submittedBy: req.body.uid },
+  });
+};
 
-const unSubmitAssignment = (req,res)=>{
+const unSubmitAssignment = (req, res) => {
+  Assignment.findByIdAndUpdate(req.body.assignmentID, {
+    $pull: { submittedBy: req.body.uid },
+  });
+};
 
-}
+const gradeAssignment = (req, res) => {};
 
-const gradeAssignment = (req,res)=>{
-
-}
-
-module.exports = { createAssignment, updateAssignment, deleteAssignment, submitAssignment, unSubmitAssignment, gradeAssignment };
+module.exports = {
+  createAssignment,
+  updateAssignment,
+  deleteAssignment,
+  submitAssignment,
+  unSubmitAssignment,
+  gradeAssignment,
+};
