@@ -61,6 +61,7 @@ app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(express.static('public'));
 // app.use(cors);
 // app.use(helmet);
 // app.use(xss);
@@ -78,6 +79,7 @@ app.listen(PORT, () => {
 
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "./admin-panel/login.html"));
+  // res.sendFile(path.join(__dirname, "./admin-panel/admin.css"));
 });
 
 app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {

@@ -4,22 +4,31 @@
     <title>Admin Panel</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="./admin-panel/admin.css" />
+    <link rel="stylesheet" type="text/css" href="./css/admin.css">
+    
   </head>
   <body>
+    
     <!-- <link rel="stylesheet" href="/admin-panel/admin.css"> -->
-    <!-- <script src="/admin-panel/admin.js"></script> -->
-    <div class="header">
-        <h1>Admin Panel</h1>
-      </div>
-      <input type="email" placeholder="Email">
-      <input type="password" placeholder="Password">
-      <button>Sign-in</button>
-      <form action="/uploadfile" enctype="multipart/form-data" method="post">
+    <script type="text/javascript" src="controller/AuthController.js"></script>
+    <div class="header">ColabSphere</div>
+
+<br><br>
+    <input type="email" name="name" placeholder="Email" class="question" id="nme" required autocomplete="off" />
+    
+<br><br>
+    <input type="password" placeholder="Password" class="question" id="msg" required autocomplete="off" />
+
+
+<br><br>
+   
+    <a href="" class="bn3637 bn38">Sign-in</a> 
+      <!-- <button>Sign-in</button> -->
+      <!-- <form action="/uploadfile" enctype="multipart/form-data" method="post">
         <input type="file" name="uploadfile" accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' >
-        <input type="submit" value="Upload Excel">
+        <input type="submit" value="Upload Excel"> -->
 
 
-      </form> 
+      <!-- </form>  -->
   </body>
 </html>
