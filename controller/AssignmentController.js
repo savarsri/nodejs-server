@@ -23,6 +23,9 @@ const createAssignment = (req, res) => {
   let assignmentDescription = req.body.description;
   let assignmentDueDate = req.body.dueDate;
   let assignmentGrade = req.body.grade;
+  
+  
+
   User.findById(uid).then((user) => {
     Team.findOne({ code }, "id admin", function (err, docs) {
       if (err) {
@@ -45,6 +48,7 @@ const createAssignment = (req, res) => {
         dueDate: assignmentDueDate,
         notSubmittedBy: docs.members,
         grade: assignmentGrade,
+        file: url + `./files/${teamID}/assignments` + request.file.filename
       });
 
       assignment

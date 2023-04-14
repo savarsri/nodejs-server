@@ -2,6 +2,9 @@ const Team = require("../models/Team");
 const Post = require("../models/Post");
 const User = require("../models/User");
 const Assignment = require("../models/Assignment");
+const { application } = require("express");
+const filess = require("../middleware/upload")
+const fs = require('fs');
 
 const getTeams = async (req, res) => {
   let uid = req.body.uid;
@@ -59,17 +62,20 @@ const createTeams = (req, res) => {
     name: req.body.name,
     createdBy: uid,
     admin: uid,
-    code: code,
+  code: code,
   });
   team
     .save()
     .then((team) => {
+      
+      filess.mkdirectory(team.id);
+
       User.findByIdAndUpdate(req.body.uid, { $push: { teams: team } })
         .then((data) => {
           // Do something with data
           res.status(200).json({
-            message: "Team Created",
-          });
+            team
+          })
         })
         .catch((error) => {
           // Error handling

@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+
 const morgan = require("morgan");
 const path = require("path");
 const multer = require('multer');
@@ -208,3 +209,6 @@ async function addUsers(data){
     }
   });
 }
+
+
+// module.exports = {upload, mkdirectory}
