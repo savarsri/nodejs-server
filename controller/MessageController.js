@@ -12,7 +12,7 @@ const sendMessage = async (req, res) => {
   }
 
   let newMessage = {
-    sender: req.body.uid,
+    sender: req.headers.uid,
     message: message,
     chat: chatId,
   };
@@ -27,18 +27,25 @@ const sendMessage = async (req, res) => {
   });
 
   await Chat.findByIdAndUpdate(chatId, { latestMessage: m }, { new: true });
-
   res.status(200).json(m);
 };
 
 const allMessages = async (req, res) => {
-  const { chatId } = req.params;
+  let chatId  = req.body.chatId;
+
+  if(chatId == ''){
+    return;
+  }
 
   const getMessage = await Message.find({ chat: chatId })
     .populate("sender", "avatar email _id")
     .populate("chat");
 
   res.status(200).json(getMessage);
+
+  // res.status(200).json({
+  //   message:"hello"
+  // })
 };
 
 module.exports = { allMessages, sendMessage };

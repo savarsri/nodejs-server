@@ -6,7 +6,7 @@ const User = require("../models/User");
 
 
 const getChat = async (req, res) => {
-  const { userId } = req.body;
+  let userId  = req.body.userId;
 
   if (!userId) {
     return res.send("No User Exists!");
@@ -15,11 +15,11 @@ const getChat = async (req, res) => {
   let chat = await Chat.find({
     isGroupChat: false,
     $and: [
-      { users: { $elemMatch: { $eq: req.user.id } } },
+      { users: { $elemMatch: { $eq: req.headers.uid } } },
       { users: { $elemMatch: { $eq: userId } } },
     ],
   })
-    .populate("users", "-password")
+    .populate({path: "users", select: "name email _id"})
     .populate("latestMessage");
 
   chat = await User.populate(chat, {
@@ -33,12 +33,11 @@ const getChat = async (req, res) => {
     const createChat = await Chat.create({
       chatName: "sender",
       isGroupChat: false,
-      users: [req.user.id, userId],
+      users: [req.headers.uid, userId],
     });
 
     const fullChat = await Chat.findOne({ _id: createChat._id }).populate(
-      "users",
-      "-password"
+      { path: "users", select: "name email _id" }
     );
 
     res.status(200).json(fullChat);
@@ -46,7 +45,7 @@ const getChat = async (req, res) => {
 };
 
 const getChats = async (req, res) => {
-  const chat = await Chat.find({ users: { $elemMatch: { $eq: req.body.uid } } })
+  const chat = await Chat.find({ users: { $elemMatch: { $eq: req.headers.uid } } })
     .populate("users", "-password")
     .populate("groupAdmin", "-password")
     .populate("latestMessage")
@@ -60,106 +59,106 @@ const getChats = async (req, res) => {
   res.status(200).json(user);
 };
 
-const createGroup = async (req, res) => {
-  if (!req.body.users || !req.body.name) {
-    return res.status(400).send({ message: "Please Fill all the feilds" });
-  }
+// const createGroup = async (req, res) => {
+//   if (!req.body.users || !req.body.name) {
+//     return res.status(400).send({ message: "Please Fill all the feilds" });
+//   }
 
-  var users = JSON.parse(req.body.users);
+//   var users = JSON.parse(req.body.users);
 
-  if (users.length < 2) {
-    return res
-      .status(400)
-      .send("More than 2 users are required to form a group chat");
-  }
+//   if (users.length < 2) {
+//     return res
+//       .status(400)
+//       .send("More than 2 users are required to form a group chat");
+//   }
 
-  users.push(req.user.id);
+//   users.push(req.user.id);
 
-  const groupChat = await Chat.create({
-    chatName: req.body.name,
-    users: users,
-    isGroupChat: true,
-    groupAdmin: req.user.id,
-  });
+//   const groupChat = await Chat.create({
+//     chatName: req.body.name,
+//     users: users,
+//     isGroupChat: true,
+//     groupAdmin: req.user.id,
+//   });
 
-  const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
-    .populate("users", "-password")
-    .populate("groupAdmin", "-password");
+//   const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
+//     .populate("users", "-password")
+//     .populate("groupAdmin", "-password");
 
-  res.status(200).json(fullGroupChat);
-};
+//   res.status(200).json(fullGroupChat);
+// };
 
-const renameGroup = async (req, res) => {
-  const { chatId, chatName } = req.body;
+// const renameGroup = async (req, res) => {
+//   const { chatId, chatName } = req.body;
 
-  const updateChat = await Chat.findByIdAndUpdate(
-    chatId,
-    {
-      chatName: chatName,
-    },
-    {
-      new: true,
-    }
-  )
-    .populate("users", "-password")
-    .populate("groupAdmin", "-password");
+//   const updateChat = await Chat.findByIdAndUpdate(
+//     chatId,
+//     {
+//       chatName: chatName,
+//     },
+//     {
+//       new: true,
+//     }
+//   )
+//     .populate("users", "-password")
+//     .populate("groupAdmin", "-password");
 
-  if (!updateChat) {
-    throw new BadRequestError("Chat Not Found");
-  } else {
-    res.json(updateChat);
-  }
-};
+//   if (!updateChat) {
+//     throw new BadRequestError("Chat Not Found");
+//   } else {
+//     res.json(updateChat);
+//   }
+// };
 
-const addUserToGroup = async (req, res) => {
-  const { chatId, userId } = req.body;
+// const addUserToGroup = async (req, res) => {
+//   const { chatId, userId } = req.body;
 
-  const addUser = await Chat.findByIdAndUpdate(
-    chatId,
-    {
-      $push: { users: userId },
-    },
-    {
-      new: true,
-    }
-  )
-    .populate("users", "-password")
-    .populate("groupAdmin", "-password");
+//   const addUser = await Chat.findByIdAndUpdate(
+//     chatId,
+//     {
+//       $push: { users: userId },
+//     },
+//     {
+//       new: true,
+//     }
+//   )
+//     .populate("users", "-password")
+//     .populate("groupAdmin", "-password");
 
-  if (!addUser) {
-    throw new BadRequestError("Chat Not Found");
-  } else {
-    res.status(200).json(addUser);
-  }
-};
+//   if (!addUser) {
+//     throw new BadRequestError("Chat Not Found");
+//   } else {
+//     res.status(200).json(addUser);
+//   }
+// };
 
-const removeFromGroup = async (req, res) => {
-  const { chatId, userId } = req.body;
+// const removeFromGroup = async (req, res) => {
+//   const { chatId, userId } = req.body;
 
-  const removeUser = await Chat.findByIdAndUpdate(
-    chatId,
-    {
-      $pull: { users: userId },
-    },
-    {
-      new: true,
-    }
-  )
-    .populate("users", "-password")
-    .populate("groupAdmin", "-password");
+//   const removeUser = await Chat.findByIdAndUpdate(
+//     chatId,
+//     {
+//       $pull: { users: userId },
+//     },
+//     {
+//       new: true,
+//     }
+//   )
+//     .populate("users", "-password")
+//     .populate("groupAdmin", "-password");
 
-  if (!removeUser) {
-    throw new BadRequestError("Chat Not Found");
-  } else {
-    res.status(200).json(removeUser);
-  }
-};
+//   if (!removeUser) {
+//     throw new BadRequestError("Chat Not Found");
+//   } else {
+//     res.status(200).json(removeUser);
+//   }
+// };
 
 module.exports = {
   getChat,
   getChats,
-  createGroup,
-  removeFromGroup,
-  renameGroup,
-  addUserToGroup,
+  // createGroup,
+  // removeFromGroup,
+  // renameGroup,
+  // addUserToGroup,
 };

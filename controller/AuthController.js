@@ -57,16 +57,19 @@ const login = async (req, res) => {
           }
           if (result) {
             delete (password);
-            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "30s"});
-            let refreshtoken = jwt.sign({ name: user.employeeID }, 'secretrefreshtoken', {expiresIn: "24h"});
-            res.cookie('jwt',token, { httpOnly: false, secure: false, maxAge: 3600000 });
+            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "24h"});
+            // let refreshtoken = jwt.sign({ name: user.employeeID }, 'secretrefreshtoken', {expiresIn: "24h"});
+            // res.cookie('jwt',token, { httpOnly: false, secure: false, maxAge: 3600000 });
             res.status(200).json({
               code: 200,
-              _id: user._id,
-              email: user.email,
-              avatar: user.avatar,
-              token,
-              refreshtoken
+              user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                token,
+              },
+              // refreshtoken
             });
           } else {
             res.status(200).json({
@@ -92,17 +95,43 @@ const login = async (req, res) => {
 };
 
 const searchUser = async (req, res) => {
-  const { search } = req.query;
+  // const { search } = req.query;
 
-  const user = await User.find({
-    name: { $regex: search, $options: "i" },
-  }).select("avatar _id email name");
+  // const user = await User.find({
+  //   name: { $regex: search, $options: "i" },
+  // }).select("avatar _id email name");
 
-    res.status(200).json(user);
+    // res.status(200).json(user);
+
+    User.find({},'avatar _id email name').then((users)=>{
+      res.status(200).json(users)
+    })
 };
+
+// const searchUser = async (req, res) => {
+//   const { search } = req.query;
+
+//   const user = await User.find({
+//     name: { $regex: search, $options: "i" },
+//   }).select("avatar _id email name");
+
+//     res.status(200).json(user);
+// };
+
+const uploadProfilePicture= async(req,res) => {
+  let uid = req.headers.uid;
+  let avatar = req.body.image;
+
+  User.findByIdAndUpdate(uid,{avatar:avatar}).then((user)=>{
+    res.status(200).json({code:200})
+  }).catch((error)=>{
+    res.status(500).json(error);
+  })
+}
 
 module.exports = {
   register,
   login,
   searchUser,
+  uploadProfilePicture
 };

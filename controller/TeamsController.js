@@ -3,11 +3,11 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 const Assignment = require("../models/Assignment");
 const { application } = require("express");
-const filess = require("../middleware/upload")
-const fs = require('fs');
+const filess = require("../middleware/upload");
+const fs = require("fs");
 
 const getTeams = async (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let userTeamsID = [];
 
   // Find list of objectID's of teams the user is in
@@ -55,30 +55,31 @@ function makeid(length) {
 }
 
 const createTeams = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   code = makeid(6);
 
   let team = new Team({
     name: req.body.name,
     createdBy: uid,
     admin: uid,
-  code: code,
+    code: code,
   });
   team
     .save()
     .then((team) => {
-      
       filess.mkdirectory(team.id);
 
-      User.findByIdAndUpdate(req.body.uid, { $push: { teams: team } })
+      User.findByIdAndUpdate(uid, { $push: { teams: team } })
         .then((data) => {
           // Do something with data
           res.status(200).json({
-            team
-          })
+            code: 200,
+            message: "Team created successfully!",
+          });
         })
         .catch((error) => {
           // Error handling
+          res.status(500).json(error);
           team.deleteOne();
         });
     })
@@ -94,13 +95,16 @@ const createTeams = (req, res) => {
 };
 
 const joinTeam = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let code = req.body.code;
   Team.findOneAndUpdate({ code }, { $push: { members: uid } })
     .then((team) => {
       User.findByIdAndUpdate(uid, { $push: { teams: team } })
         .then((data) => {
-          res.status(200);
+          res.status(200).json({
+            code: 200,
+            message: "Team Joined",
+          });
         })
         .catch((error) => {
           res.status(500).json({
@@ -115,8 +119,83 @@ const joinTeam = (req, res) => {
     });
 };
 
+const addmember = (req, res) => {
+  let uid = req.headers.uid;
+  let teamID = req.body.teamID;
+  let member = req.body.member;
+
+  Team.findOneAndUpdate(
+    { _id: teamID, admin: uid },
+    { $push: { members: member } }
+  )
+    .then((team) => {
+      if (team == null) {
+        res.status(200).json({
+          error: "Team not found",
+        });
+        return;
+      }
+      User.updateMany(
+        { _id: { $in: member } },
+        { $push: { teams: team._id } },
+        function (err, docs) {
+          if (err) {
+            res.status(500).json(err);
+          } else {
+            res.status(200).json({
+              code: 200,
+            });
+          }
+        }
+      );
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        error,
+      });
+    });
+};
+
+const removeMember = (req, res) => {
+  let uid = req.headers.uid;
+  let teamID = req.body.teamID;
+  let member = req.body.member;
+
+  Team.findOneAndUpdate(
+    { _id: teamID, admin: uid },
+    { $pull: { members: { $in: member } } }
+  )
+    .then((team) => {
+      if (team == null) {
+        res.status(500).json({
+          error: "Team not found",
+        });
+        return;
+      }
+      User.updateMany(
+        { _id: { $in: member } },
+        { $pull: { teams: team._id } },
+        function (err, docs) {
+          if (err) {
+            res.status(500).json(err);
+          } else {
+            res.status(200).json({
+              code: 200,
+            });
+          }
+        }
+      );
+    })
+    .catch((error) => {
+      res.status(500).json({
+        error,
+      });
+    });
+};
+
 const getTeamDetails = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let teamID = req.body.teamID;
   let isAdmin = false;
   User.findById(uid).then((user) => {
@@ -167,8 +246,9 @@ const getTeamDetails = (req, res) => {
 };
 
 const getTeamPosts = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let teamID = req.body.teamID;
+  let isAdmin = false;
 
   User.findById(uid).then((user) => {
     Team.findById(teamID, "id admin members posts", async function (err, docs) {
@@ -186,66 +266,99 @@ const getTeamPosts = (req, res) => {
       ) {
         return;
       }
+      if (docs.admin.includes(user.id, 0)) {
+        isAdmin = true;
+      }
       let posts = docs.posts;
-      if(posts == []){
+      if (posts == []) {
         res.status(200).json({
           posts: [],
         });
-      }else{
+      } else {
         let teamPosts = await Post.find(
           {
             _id: {
               $in: posts,
             },
           },
-          "content createdBy _id",
-        ).populate({ path: "createdBy", select: "name email _id" }).sort({ updatedAt: -1 });
-  
-        res.status(200).json(teamPosts);
+          "content createdBy _id"
+        )
+          .populate({ path: "createdBy", select: "name email _id" })
+          .sort({ updatedAt: -1 });
+
+        res.status(200).json({ teamPosts, isAdmin });
       }
     });
   });
 };
 
 const getTeamAssignments = (req, res) => {
-  let uid = req.body.uid;
-  let code = req.body.code;
+  let uid = req.headers.uid;
+  let teamID = req.body.teamID;
 
   User.findById(uid).then((user) => {
-    Team.findOne({ code }, "id admin members assignment", function (err, docs) {
-      if (err) {
-        res.status(500).json({
-          error: "Error getting teams!",
-        });
-        return;
-      }
-      if (!user.teams.includes(docs.id, 0)) {
-        return;
-      }
-      if (
-        !(docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0))
-      ) {
-        return;
-      }
-      let assignments = docs.assignment;
-      Assignment.find(
-        {
-          _id: {
-            $in: assignments,
-          },
-        },
-        "title dueDate -_id",
-        function (err, docs) {
-          if (err) {
-            res.status(500).json({
-              error: "Error getting teams!",
-            });
-            return;
-          }
-          res.status(200).json(docs);
+    Team.findById(
+      teamID,
+      "id admin members assignment",
+      async function (err, docs) {
+        if (err) {
+          res.status(500).json({
+            error: "Error getting teams!",
+          });
+          return;
         }
-      );
-    });
+        if (!user.teams.includes(docs.id, 0)) {
+          return;
+        }
+        if (
+          !(
+            docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0)
+          )
+        ) {
+          return;
+        }
+        let assignments = docs.assignment;
+        if (assignments == []) {
+          res.status(200).json({
+            assignments: [],
+          });
+        } else {
+          let teamAssignments = await Assignment.find(
+            {
+              _id: {
+                $in: assignments,
+              },
+            },
+            "title dueDate _id"
+          ).sort({ updatedAt: -1 });
+
+          res.status(200).json(teamAssignments);
+        }
+      }
+    );
+  });
+};
+
+const getTeamMembers = async (req, res) => {
+  let uid = req.headers.uid;
+  let teamID = req.body.teamID;
+  let isAdmin = false;
+
+  Team.findById(teamID, "admin").then((team) => {
+    if (team.admin.includes(uid)) {
+      isAdmin = true;
+    }
+  });
+
+  User.findById(uid).then(async (user) => {
+    let teamMembers = await Team.findById(teamID, "admin members -_id")
+      .populate({ path: "admin", select: "name email _id" })
+      .populate({ path: "members", select: "name email _id" });
+    if (teamMembers.admin.includes(user._id, 0)) {
+      res.status(200).json({ teamMembers, isAdmin });
+    } else {
+      res.status(200).json({ teamMembers, isAdmin });
+    }
   });
 };
 
@@ -259,4 +372,7 @@ module.exports = {
   getTeamPosts,
   getTeamAssignments,
   getTeamFiles,
+  getTeamMembers,
+  addmember,
+  removeMember,
 };

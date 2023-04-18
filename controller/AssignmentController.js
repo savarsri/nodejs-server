@@ -3,31 +3,57 @@ const Team = require("../models/Team");
 const Assignment = require("../models/Assignment");
 
 const getAssignment = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let assignmentID = req.body.assignmentID;
   User.findById(uid).then((user) => {
-    Assignment.findById(assignmentID).then((assignment)=>{
-      res.status(200).json({
-        title : assignment.title,
-        description : assignment.description,
-        dueDate : assignment.dueDate,
+    Assignment.findById(assignmentID).populate({path: "submittedBy", select: "name email avatar _id"}).populate({path:"notSubmittedBy",select: "name email avatar _id"}).then((assignment)=>{
+      if(assignment.createdBy==uid){
+        res.status(200).json({
+          assignment,
+          isAdmin:true,
+        });
+      }else if(assignment.submittedBy.includes(uid)){
+        res.status(200).json({
+          assignment:{
+            title : assignment.title,
+            description : assignment.description,
+            dueDate : assignment.dueDate,
+            grade:assignment.grade,
+            submitted: true,
+          },
+          isAdmin: false,
+        });
+      }else{
+        res.status(200).json({
+          assignment: {
+            title : assignment.title,
+            description : assignment.description,
+            dueDate : assignment.dueDate,
+            grade:assignment.grade,
+            submitted: false,
+          },
+          isAdmin: false,
+        });
+      }
+    }).catch((error)=>{
+      res.status(404).json({
+        error: "Assignment not found"
       })
     })
   });
 };
 
 const createAssignment = (req, res) => {
-  let uid = req.body.uid;
-  let code = req.body.code;
+  let uid = req.headers.uid;
+  let createdBy = req.body.uid;
+  let teamID = req.body.teamID;
   let assignmentTitle = req.body.title;
   let assignmentDescription = req.body.description;
   let assignmentDueDate = req.body.dueDate;
   let assignmentGrade = req.body.grade;
   
-  
-
   User.findById(uid).then((user) => {
-    Team.findOne({ code }, "id admin", function (err, docs) {
+    Team.findById(teamID, "id admin members", function (err, docs) {
       if (err) {
         res.status(500).json({
           error: "Error getting teams!",
@@ -43,12 +69,13 @@ const createAssignment = (req, res) => {
       let teamID = docs.id;
       let assignment = new Assignment({
         team: teamID,
+        createdBy: createdBy,
         title: assignmentTitle,
         description: assignmentDescription,
         dueDate: assignmentDueDate,
         notSubmittedBy: docs.members,
         grade: assignmentGrade,
-        file: url + `./files/${teamID}/assignments` + request.file.filename
+        // file: url + `./files/${teamID}/assignments` + req.file.filename
       });
 
       assignment
@@ -56,7 +83,9 @@ const createAssignment = (req, res) => {
         .then((assignment) => {
           Team.findByIdAndUpdate(teamID, { $push: { assignment: assignment } })
             .then(() => {
-              res.status(200);
+              res.status(200).json({
+                message: "Assignment Created"
+              });
             })
             .catch((error) => {
               assignment.deleteOne();
@@ -71,7 +100,7 @@ const createAssignment = (req, res) => {
 };
 
 const updateAssignment = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let assignmentId = req.body.assignmentId;
   let assignmentTitle = req.body.title;
   let assignmentDescription = req.body.description;
@@ -109,7 +138,7 @@ const updateAssignment = (req, res) => {
 };
 
 const deleteAssignment = (req, res) => {
-  let uid = req.body.uid;
+  let uid = req.headers.uid;
   let assignmentId = req.body.assignmentId;
   User.findById(uid).then((user) => {
     Team.findOne({ code }, "id admin", function (err, docs) {
@@ -147,13 +176,13 @@ const deleteAssignment = (req, res) => {
 
 const submitAssignment = (req, res) => {
   Assignment.findByIdAndUpdate(req.body.assignmentID, {
-    $push: { submittedBy: req.body.uid },
+    $push: { submittedBy: req.headers.uid },
   });
 };
 
 const unSubmitAssignment = (req, res) => {
   Assignment.findByIdAndUpdate(req.body.assignmentID, {
-    $pull: { submittedBy: req.body.uid },
+    $pull: { submittedBy: req.headers.uid },
   });
 };
 
@@ -166,4 +195,5 @@ module.exports = {
   submitAssignment,
   unSubmitAssignment,
   gradeAssignment,
+  getAssignment
 };

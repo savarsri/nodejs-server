@@ -5,6 +5,7 @@ const AssignmentController = require('../controller/AssignmentController')
 
 // Assignment functions router set-up 
 
+router.post('/getAssignment', AssignmentController.getAssignment)
 router.post('/createAssignment', AssignmentController.createAssignment)
 router.post('/updateAssignment', AssignmentController.updateAssignment)
 router.post('/deleteAssignment', AssignmentController.deleteAssignment)

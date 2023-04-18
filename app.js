@@ -1,6 +1,5 @@
 const express = require("express");
 const mongoose = require("mongoose");
-
 const morgan = require("morgan");
 const path = require("path");
 const multer = require('multer');
@@ -57,9 +56,18 @@ db.once("open", () => {
 const app = express();
 const server = http.createServer(app);
 
+const cors=require("cors");
+const corsOptions ={
+   origin:'*', 
+   credentials:true,            //access-control-allow-credentials:true
+   optionSuccessStatus:200,
+}
+
+app.use(cors(corsOptions));
+
 app.use(morgan("dev"));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json());
 // app.use(cors);
 // app.use(helmet);
@@ -89,19 +97,23 @@ app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {
 app.use("/api/teams", TeamsRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/employee", EmployeeRoute);
-app.use("/api/assignment", AssignmentRoute);
-app.use("/api/post", PostRoute);
-app.use("/api/chat", ChatRoute);
-app.use("/api/message", MessageRoute);
+app.use("/api/assignment", authenticate, AssignmentRoute);
+app.use("/api/post", authenticate, PostRoute);
+app.use("/api/chat", authenticate, ChatRoute);
+app.use("/api/message", authenticate, MessageRoute);
 
 
 // Socket 
 
 const io = new socket.Server(server, {
   pingTimeout: 60000,
-  // cors: {
-  //   origin: "*",
-  // },
+  cors: {
+    origin: "*",
+  },
+});
+
+io.listen(9000,()=>{
+  console.log("io listening on 9000")
 });
 
 io.on("connection", (socket) => {
@@ -136,17 +148,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// io.on('connection', (socket) => {
-//     console.log('Connected...')
-//     socket.on('message', (msg) => {
-//         socket.broadcast.emit('message', msg)
-//     })
-
-// })
-// app.use(express.static(__dirname + "/chat"))
-// app.get('/chat', (req, res) => {
-//   res.sendFile(__dirname +  "/chat/chat.html")
-// })
 
 async function importExcelData2MongoDB(filePath){
     // -> Read Excel File to Json Data

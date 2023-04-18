@@ -9,6 +9,11 @@ const assignmentSchema = new Schema({
         required: true,
         ref: 'Team'
     },
+    createdBy:{
+        type: mongoose.SchemaTypes.ObjectId,
+        required: true,
+        ref: 'User'
+    },
     title: {
         type: String,
         maxLength: 50,
@@ -17,7 +22,7 @@ const assignmentSchema = new Schema({
     },
     description: {
         type: String,
-        maxLength: 250,
+        maxLength: 500,
         minLength: 0,
     },
     createdAt: {

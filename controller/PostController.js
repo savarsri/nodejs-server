@@ -3,7 +3,7 @@ const Team = require("../models/Team");
 const Post = require("../models/Post");
 
 const createPost = (req,res)=>{
-    let uid = req.body.uid;
+    let uid = req.headers.uid;
     let teamID = req.body.teamID;
     let content = req.body.content;
     let attachments = req.body.attachments;
@@ -18,6 +18,7 @@ const createPost = (req,res)=>{
       post.save().then((post)=>{
         Team.findByIdAndUpdate(teamID, { $push: { posts: post } }).then((data)=>{
           res.status(200).json({
+            code:200,
             message: "Post Created"
           });
         }).catch((error)=>{
@@ -45,21 +46,56 @@ const updatePost = (req,res)=>{
   })
 }
 
-const deletePost = (req,res)=>{
-    Post.findOne({ 
-        _id: req.body.postID,
-        createdBy: req.body.uid,
-      })
-      .remove()
-      .exec().then(()=>{
-        res.status(200).json({
-          message: "Deleted Post"
+const deletePost = async (req,res)=>{
+  let uid = req.headers.uid;
+  let postID = req.body.postID;
+  await Post.findById(postID, 'team').then((post)=>{
+    Team.findById(post.team ,'admin').then((team)=>{
+      if(team.admin.includes(uid,0)){
+        Post.findOne({ 
+          _id: postID,
         })
-      }).catch((error)=>{
-        res.status(500).json({
-          error
+        .remove()
+        .exec().then(()=>{
+          res.status(200).json({
+            code: 200,
+            message: "Deleted Post"
+          })
+          return;
+        }).catch((error)=>{
+          res.status(500).json({
+            error
+          })
+          return;
+        });
+      }else{
+        Post.findOne({ 
+          _id: postID,
+          createdBy: uid,
         })
-      });
+        .remove()
+        .exec().then(()=>{
+          res.status(200).json({
+            code: 200,
+            message: "Deleted Post"
+          })
+          return;
+        }).catch((error)=>{
+          res.status(500).json({
+            error
+          })
+          return;
+        });
+      }
+    }).catch((error)=>{
+      res.status(500).json(error);
+      return;
+    })
+  }).catch((error)=>{
+    res.status(500).json(error);
+    return;
+  });
+    
 }
 
 
