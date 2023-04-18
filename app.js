@@ -69,6 +69,7 @@ app.use(morgan("dev"));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json());
+app.use(express.static('public'));
 // app.use(cors);
 // app.use(helmet);
 // app.use(xss);
@@ -86,10 +87,11 @@ app.listen(PORT, () => {
 
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "./admin-panel/login.html"));
+  // res.sendFile(path.join(__dirname, "./admin-panel/admin.css"));
 });
 
 app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {
-  importExcelData2MongoDB(__dirname + "/public/uploads/" + req.file.filename);
+  importExcelData2MongoDB(__dirname + "/userlist/uploads/" + req.file.filename);
   console.log(res);
 });
 //Api routes set-up
@@ -175,8 +177,8 @@ async function importExcelData2MongoDB(filePath){
     var data = temp[0];
     delete(temp);
 
-    data = await createHashedPass(data);
-    
+    // data = await createHashedPass(data);
+    console.log(data)
     // Insert Json-Object to MongoDB
 
     await addUsers(data);
@@ -212,4 +214,4 @@ async function addUsers(data){
 }
 
 
-// module.exports = {upload, mkdirectory}
+module.exports = {upload}
