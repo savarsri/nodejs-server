@@ -170,7 +170,7 @@ html {
     text-decoration: none;
     color: grey;
     backface-visibility: hidden;
-    border: 1.5rem solid transparent;
+    border: 0.9rem solid transparent;
     border-radius: 3rem;
   }
   .bn38 {

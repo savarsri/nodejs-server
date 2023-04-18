@@ -213,4 +213,4 @@ async function addUsers(data){
 }
 
 
-module.exports = {upload, mkdirectory}
+module.exports = {upload}
