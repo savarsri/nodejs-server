@@ -2,10 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const path = require("path");
-const multer = require('multer');
+const multer = require("multer");
 const excelToJson = require("convert-excel-to-json");
 const bodyParser = require("body-parser");
-const authenticate = require('./middleware/authenticate');
+const authenticate = require("./middleware/authenticate");
 const AuthRoute = require("./routes/authRoute");
 const TeamsRoute = require("./routes/teamRoute");
 const AssignmentRoute = require("./routes/assignmentRoute");
@@ -14,9 +14,13 @@ const EmployeeRoute = require("./routes/employee");
 const ChatRoute = require("./routes/chatRoute");
 const MessageRoute = require("./routes/messageRoute");
 const User = require("./models/User");
+const File = require("./models/File");
 const bcrypt = require("bcryptjs");
-const socket = require('socket.io');
-const http = require('http');
+const socket = require("socket.io");
+const http = require("http");
+const AssignmentController = require("./controller/AssignmentController");
+const PostController = require("./controller/PostController");
+var fs = require("fs");
 
 // const cors = require('cors');
 // const helmet = require('helmet');
@@ -26,7 +30,16 @@ const http = require('http');
 
 var storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./public/uploads");
+    const directory = path.join(
+      __dirname,
+      `/temp/uploads/${req.headers.uploadid}`
+    );
+
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true });
+    }
+
+    cb(null, directory);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -56,20 +69,21 @@ db.once("open", () => {
 const app = express();
 const server = http.createServer(app);
 
-const cors=require("cors");
-const corsOptions ={
-   origin:'*', 
-   credentials:true,            //access-control-allow-credentials:true
-   optionSuccessStatus:200,
-}
+const cors = require("cors");
+const corsOptions = {
+  origin: "*",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
 
 app.use(cors(corsOptions));
 
 app.use(morgan("dev"));
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
+// app.use(upload.array());
 // app.use(cors);
 // app.use(helmet);
 // app.use(xss);
@@ -90,13 +104,7 @@ app.get("/", function (req, res) {
   // res.sendFile(path.join(__dirname, "./admin-panel/admin.css"));
 });
 
-app.post("/uploadfile", upload.single("uploadfile"), (req, res) => {
-  importExcelData2MongoDB(__dirname + "/userlist/uploads/" + req.file.filename);
-  console.log(res);
-});
-//Api routes set-up
-
-app.use("/api/teams", TeamsRoute);
+app.use("/api/teams", authenticate, TeamsRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/employee", EmployeeRoute);
 app.use("/api/assignment", authenticate, AssignmentRoute);
@@ -104,8 +112,75 @@ app.use("/api/post", authenticate, PostRoute);
 app.use("/api/chat", authenticate, ChatRoute);
 app.use("/api/message", authenticate, MessageRoute);
 
+app.get("/api/download", authenticate, function (req, res) {
+  File.findById(req.headers.fileid).then((file) => {
+    res.download(
+      file.path,
+      file.originalname, // Remember to include file extension
+      (err) => {
+        if (err) {
+          res.send({
+            error: err,
+            msg: "Problem downloading the file",
+          });
+        }
+      }
+    );
+  });
+});
 
-// Socket 
+app.post(
+  "/api/assignment/createAssignment",
+  authenticate,
+  upload.array("files"),
+  (req, res, next) => {
+    File.insertMany(req.files, (err, data) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.locals.files = data;
+        next();
+      }
+    });
+  },
+  AssignmentController.createAssignment
+);
+
+app.post(
+  "/api/post/createPost",
+  authenticate,
+  upload.array("files"),
+  (req, res, next) => {
+    File.insertMany(req.files, (err, data) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.locals.files = data;
+        next();
+      }
+    });
+  },
+  PostController.createPost
+);
+
+app.post(
+  "/api/assignment/submitAssignment",
+  authenticate,
+  upload.array("files"),
+  (req, res, next) => {
+    File.insertMany(req.files, (err, data) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.locals.files = data;
+        next();
+      }
+    });
+  },
+  AssignmentController.submitAssignment
+);
+
+// Socket
 
 const io = new socket.Server(server, {
   pingTimeout: 60000,
@@ -114,8 +189,8 @@ const io = new socket.Server(server, {
   },
 });
 
-io.listen(9000,()=>{
-  console.log("io listening on 9000")
+io.listen(9000, () => {
+  console.log("io listening on 9000");
 });
 
 io.on("connection", (socket) => {
@@ -150,68 +225,70 @@ io.on("connection", (socket) => {
   });
 });
 
-
-async function importExcelData2MongoDB(filePath){
-    // -> Read Excel File to Json Data
-    const excelData = excelToJson({
-      sourceFile: filePath,
-      sheets: [
-        {
-          // Excel Sheet Name
-          name: "User",
-          // Header Row -> be skipped and will not be present at our result object.
-          header: {
-            rows: 1,
-          },
-          // Mapping columns to keys
-          columnToKey: {
-            A: "name",
-            B: "email",
-            C: "password",
-          },
+async function importExcelData2MongoDB(filePath) {
+  // -> Read Excel File to Json Data
+  const excelData = excelToJson({
+    sourceFile: filePath,
+    sheets: [
+      {
+        // Excel Sheet Name
+        name: "User",
+        // Header Row -> be skipped and will not be present at our result object.
+        header: {
+          rows: 1,
         },
-      ],
-    });
+        // Mapping columns to keys
+        columnToKey: {
+          A: "name",
+          B: "email",
+          C: "password",
+        },
+      },
+    ],
+  });
 
-    const temp = Object.values(excelData);
-    var data = temp[0];
-    delete(temp);
+  const temp = Object.values(excelData);
+  var data = temp[0];
+  delete temp;
 
-    // data = await createHashedPass(data);
-    console.log(data)
-    // Insert Json-Object to MongoDB
+  // data = await createHashedPass(data);
+  console.log(data);
+  // Insert Json-Object to MongoDB
 
-    await addUsers(data);
-    
-    // fs.unlinkSync(filePath);
-  }
+  await addUsers(data);
 
-async function createHashedPass(data){
+  // fs.unlinkSync(filePath);
+}
+
+async function createHashedPass(data) {
   for (let index = 0; index < data.length; index++) {
-    const pass = bcrypt.hash(data[index].password, 10, function (err, hashedPass) {
-      if (err) {
-        res.json({
-          error: err,
-        });
-      }else{
-        return hashedPass;
+    const pass = bcrypt.hash(
+      data[index].password,
+      10,
+      function (err, hashedPass) {
+        if (err) {
+          res.json({
+            error: err,
+          });
+        } else {
+          return hashedPass;
+        }
       }
-    });
+    );
     data[index].password = pass;
   }
   return data;
 }
 
-async function addUsers(data){
+async function addUsers(data) {
   User.insertMany(data, (err, data) => {
     if (err) {
       console.log(err);
     } else {
-      console.log('hello');
+      console.log("hello");
       // res.redirect("/");
     }
   });
 }
 
-
-module.exports = {upload}
+// module.exports = {upload}

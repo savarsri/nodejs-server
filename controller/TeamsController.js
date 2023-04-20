@@ -330,7 +330,7 @@ const getTeamAssignments = (req, res) => {
               },
             },
             "title dueDate _id"
-          ).sort({ updatedAt: -1 });
+          ).sort({ dueDate: 1 });
 
           res.status(200).json(teamAssignments);
         }

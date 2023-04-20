@@ -8,11 +8,10 @@ const postSchema = new Schema({
         type: String,
         required: true,
     },
-    attachments:[{
-        name: String,
-        fileType: String,
-        size: Number,
-    }],
+    files: {
+        type: [mongoose.SchemaTypes.ObjectId],
+        ref: "File",
+    },
     createdBy: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,

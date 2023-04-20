@@ -41,9 +41,10 @@ const assignmentSchema = new Schema({
         // required: true,
         ref: "User",
     },
-    // files: {
-    //     MimeType: "pdf"
-    // },
+    files: {
+        type: [mongoose.SchemaTypes.ObjectId],
+        ref: "File",
+    },
     notSubmittedBy: {
         type: [mongoose.SchemaTypes.ObjectId],
         // required: true,

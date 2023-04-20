@@ -1,57 +1,72 @@
 const User = require("../models/User");
 const Team = require("../models/Team");
 const Assignment = require("../models/Assignment");
+const File = require("../models/File");
+const fs = require("fs-extra");
+// var fs = require('fs');
+const path = require("path");
 
 const getAssignment = (req, res) => {
   let uid = req.headers.uid;
   let assignmentID = req.body.assignmentID;
   User.findById(uid).then((user) => {
-    Assignment.findById(assignmentID).populate({path: "submittedBy", select: "name email avatar _id"}).populate({path:"notSubmittedBy",select: "name email avatar _id"}).then((assignment)=>{
-      if(assignment.createdBy==uid){
-        res.status(200).json({
-          assignment,
-          isAdmin:true,
-        });
-      }else if(assignment.submittedBy.includes(uid)){
-        res.status(200).json({
-          assignment:{
-            title : assignment.title,
-            description : assignment.description,
-            dueDate : assignment.dueDate,
-            grade:assignment.grade,
-            submitted: true,
-          },
-          isAdmin: false,
-        });
-      }else{
-        res.status(200).json({
-          assignment: {
-            title : assignment.title,
-            description : assignment.description,
-            dueDate : assignment.dueDate,
-            grade:assignment.grade,
-            submitted: false,
-          },
-          isAdmin: false,
-        });
-      }
-    }).catch((error)=>{
-      res.status(404).json({
-        error: "Assignment not found"
+    Assignment.findById(assignmentID)
+      .populate({ path: "submittedBy", select: "name email avatar _id" })
+      .populate({ path: "notSubmittedBy", select: "name email avatar _id" })
+      .populate({ path: "files", select: "_id originalname mimetype" })
+      .sort({ updatedAt: -1 })
+      .then((assignment) => {
+        if (assignment.createdBy == uid) {
+          res.status(200).json({
+            assignment,
+            isAdmin: true,
+          });
+        } else if (assignment.submittedBy.includes(uid)) {
+          res.status(200).json({
+            assignment: {
+              _id: assignment._id,
+              title: assignment.title,
+              description: assignment.description,
+              dueDate: assignment.dueDate,
+              grade: assignment.grade,
+              files: assignment.files,
+              submitted: true,
+            },
+            isAdmin: false,
+          });
+        } else {
+          res.status(200).json({
+            assignment: {
+              _id: assignment._id,
+              title: assignment.title,
+              description: assignment.description,
+              dueDate: assignment.dueDate,
+              grade: assignment.grade,
+              files: assignment.files,
+              submitted: false,
+            },
+            isAdmin: false,
+          });
+        }
       })
-    })
+      .catch((error) => {
+        res.status(404).json({
+          error: "Assignment not found",
+        });
+      });
   });
 };
 
-const createAssignment = (req, res) => {
+const createAssignment = (req, res, next) => {
   let uid = req.headers.uid;
-  let createdBy = req.body.uid;
+  let createdBy = req.headers.uid;
   let teamID = req.body.teamID;
   let assignmentTitle = req.body.title;
   let assignmentDescription = req.body.description;
   let assignmentDueDate = req.body.dueDate;
   let assignmentGrade = req.body.grade;
-  
+  let assignmentFiles = res.locals.files;
+
   User.findById(uid).then((user) => {
     Team.findById(teamID, "id admin members", function (err, docs) {
       if (err) {
@@ -75,7 +90,7 @@ const createAssignment = (req, res) => {
         dueDate: assignmentDueDate,
         notSubmittedBy: docs.members,
         grade: assignmentGrade,
-        // file: url + `./files/${teamID}/assignments` + req.file.filename
+        files: assignmentFiles,
       });
 
       assignment
@@ -83,8 +98,29 @@ const createAssignment = (req, res) => {
         .then((assignment) => {
           Team.findByIdAndUpdate(teamID, { $push: { assignment: assignment } })
             .then(() => {
+              var srcDel = path.join(
+                __dirname,
+                `../temp/uploads/${req.headers.uploadid}`
+              );
+
+              for (let index = 0; index < assignmentFiles.length; index++) {
+                var dir = path.join(
+                  __dirname,
+                  `../files/${teamID}/assignments/${assignment._id}/materials/${assignmentFiles[index].originalname}`
+                );
+                var des = path.join(
+                  __dirname,
+                  `../files/${teamID}/assignments/${assignment._id}/materials/`
+                );
+                fs.move(assignmentFiles[index].path, dir, { overwrite: true });
+                File.findByIdAndUpdate(assignmentFiles[index]._id, {
+                  $set: { path: dir, destination: des },
+                }).then(() => {});
+              }
+              // fs.rmSync(srcDel, { recursive: true, force: true });
               res.status(200).json({
-                message: "Assignment Created"
+                code: 200,
+                message: "Assignment created",
               });
             })
             .catch((error) => {
@@ -175,18 +211,66 @@ const deleteAssignment = (req, res) => {
 };
 
 const submitAssignment = (req, res) => {
+  let files = res.locals.files;
   Assignment.findByIdAndUpdate(req.body.assignmentID, {
     $push: { submittedBy: req.headers.uid },
+    $pull: { notSubmittedBy: req.headers.uid },
+  }).then((assignment) => {
+    var srcDel = path.join(
+      __dirname,
+      `../temp/uploads/${req.headers.uploadid}`
+    );
+
+    for (let index = 0; index < files.length; index++) {
+      var dir = path.join(
+        __dirname,
+        `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}/${files[index].originalname}`
+      );
+
+      var des = path.join(
+        __dirname,
+        `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
+      );
+      fs.move(files[index].path, dir, { overwrite: true });
+      File.findByIdAndUpdate(files[index]._id, {
+        $set: { path: dir, destination: des },
+      }).then(() => {});
+    }
+    res.status(200).json({
+      code: 200,
+      message: "Assignment submitted",
+    });
+    // fs.rmSync(srcDel, { recursive: true, force: true });
   });
 };
 
 const unSubmitAssignment = (req, res) => {
-  Assignment.findByIdAndUpdate(req.body.assignmentID, {
+  Assignment.findByIdAndUpdate(req.headers.assid, {
     $pull: { submittedBy: req.headers.uid },
+    $push: { notSubmittedBy: req.headers.uid },
+  }).then((assignment)=>{
+    var des = path.join(
+      __dirname,
+      `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
+    );
+    File.deleteMany({destination: des}).then(()=>{
+      fs.rmSync(des, { recursive: true, force: true });
+      res.status(200).json({
+        code: 200,
+        message: "Assignment unsubmitted",
+      });
+    })
   });
 };
 
 const gradeAssignment = (req, res) => {};
+
+const testUpload = (req, res, next) => {
+  console.log(req.body);
+  console.log("hello");
+  next();
+  // console.log(req.headers);
+};
 
 module.exports = {
   createAssignment,
@@ -195,5 +279,6 @@ module.exports = {
   submitAssignment,
   unSubmitAssignment,
   gradeAssignment,
-  getAssignment
+  getAssignment,
+  testUpload,
 };

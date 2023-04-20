@@ -8,6 +8,8 @@ const User = require("../models/User");
 const getChat = async (req, res) => {
   let userId  = req.body.userId;
 
+  console.log(userId);
+
   if (!userId) {
     return res.send("No User Exists!");
   }
