@@ -59,6 +59,10 @@ const teamSchema = new Schema({
         type: [mongoose.SchemaTypes.ObjectId],
         ref: "Post",
     },
+    files: {
+        type: [mongoose.SchemaTypes.ObjectId],
+        ref: "File",
+    },
     members: {
         type: [mongoose.SchemaTypes.ObjectId],
         ref: "User",

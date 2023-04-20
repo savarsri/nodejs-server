@@ -2,9 +2,11 @@ const Team = require("../models/Team");
 const Post = require("../models/Post");
 const User = require("../models/User");
 const Assignment = require("../models/Assignment");
+const File = require("../models/File");
 const { application } = require("express");
 const filess = require("../middleware/upload");
-const fs = require("fs");
+const fs = require("fs-extra");
+const path = require("path");
 
 const getTeams = async (req, res) => {
   let uid = req.headers.uid;
@@ -201,17 +203,7 @@ const getTeamDetails = (req, res) => {
   User.findById(uid).then((user) => {
     Team.findById(teamID)
       .then((team) => {
-        if (!user.teams.includes(team.id, 0)) {
-          return;
-        }
-        if (
-          !(
-            team.admin.includes(user.id, 0) || team.members.includes(user.id, 0)
-          )
-        ) {
-          return;
-        }
-        if (team.admin.includes(user.id, 0)) {
+        if (team?.admin.includes(user.id, 0)) {
           isAdmin = true;
         }
         res.status(200).json({
@@ -251,25 +243,18 @@ const getTeamPosts = (req, res) => {
   let isAdmin = false;
 
   User.findById(uid).then((user) => {
-    Team.findById(teamID, "id admin members posts", async function (err, docs) {
+    Team.findById(teamID, "id admin posts", async function (err, docs) {
       if (err) {
         res.status(500).json({
           error: "Error getting teams!",
         });
         return;
       }
-      if (!user.teams.includes(docs.id, 0)) {
-        return;
-      }
-      if (
-        !(docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0))
-      ) {
-        return;
-      }
-      if (docs.admin.includes(user.id, 0)) {
+      console.log(docs);
+      if (docs?.admin.includes(user.id, 0)) {
         isAdmin = true;
       }
-      let posts = docs.posts;
+      let posts = docs?.posts;
       if (posts == []) {
         res.status(200).json({
           posts: [],
@@ -284,6 +269,7 @@ const getTeamPosts = (req, res) => {
           "content createdBy _id"
         )
           .populate({ path: "createdBy", select: "name email _id" })
+          .populate({ path: "files", select: "_id originalname mimetype" })
           .sort({ updatedAt: -1 });
 
         res.status(200).json({ teamPosts, isAdmin });
@@ -295,6 +281,7 @@ const getTeamPosts = (req, res) => {
 const getTeamAssignments = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
+  let isAdmin = false;
 
   User.findById(uid).then((user) => {
     Team.findById(
@@ -307,15 +294,8 @@ const getTeamAssignments = (req, res) => {
           });
           return;
         }
-        if (!user.teams.includes(docs.id, 0)) {
-          return;
-        }
-        if (
-          !(
-            docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0)
-          )
-        ) {
-          return;
+        if (docs?.admin.includes(user.id, 0)) {
+          isAdmin = true;
         }
         let assignments = docs.assignment;
         if (assignments == []) {
@@ -332,7 +312,10 @@ const getTeamAssignments = (req, res) => {
             "title dueDate _id"
           ).sort({ dueDate: 1 });
 
-          res.status(200).json(teamAssignments);
+          res.status(200).json({
+            teamAssignments,
+            isAdmin,
+          });
         }
       }
     );
@@ -362,7 +345,66 @@ const getTeamMembers = async (req, res) => {
   });
 };
 
-const getTeamFiles = (req, res) => {};
+const getTeamFiles = async (req, res) => {
+  let uid = req.headers.uid;
+  let teamID = req.headers.teamid;
+  let files = await Team.find(
+    { _id: teamID, $or: [{ admin: uid }, { members: {$in: uid}  }], },
+    "_id files"
+  )
+    .populate({ path: "files", select: "_id originalname mimetype" })
+    .sort({ createdAt: 1 });
+
+
+  res.status(200).json(files);
+};
+
+const uploadFiles = (req, res) => {
+  let teamID = req.body.teamID;
+  let files = res.locals.files;
+  Team.findByIdAndUpdate(teamID, { $push: { files: files } })
+    .then((data) => {
+      for (let index = 0; index < files.length; index++) {
+        var dir = path.join(
+          __dirname,
+          `../files/${teamID}/files/${files[index].originalname}`
+        );
+        var des = path.join(__dirname, `../files/${teamID}/files/`);
+        fs.move(files[index].path, dir, { overwrite: true });
+        File.findByIdAndUpdate(files[index]._id, {
+          $set: { path: dir, destination: des },
+        }).then(() => {});
+      }
+      res.status(200).json({
+        code: 200,
+        message: "Post Created",
+      });
+    })
+    .catch((error) => {
+      console.log(error)
+      res.status(500).json({
+        error,
+      });
+    });
+};
+
+const deleteFile = (req, res) => {
+  let teamID = req.headers.teamid;
+  let fileID = req.headers.fileid;
+  Team.findByIdAndUpdate(teamID,{files:{$pull : fileID}}).then((team)=>{
+    File.findById(fileID, "path").then((file) => {
+      fs.unlink(file.path, (err) => {
+        if (err) throw err;
+      });
+      File.findByIdAndDelete(fileID).then(() => {
+        res.status(200).json({
+          code: 200,
+          message: "File deleted!",
+        });
+      });
+    });
+  })
+};
 
 module.exports = {
   getTeams,
@@ -375,4 +417,6 @@ module.exports = {
   getTeamMembers,
   addmember,
   removeMember,
+  uploadFiles,
+  deleteFile
 };

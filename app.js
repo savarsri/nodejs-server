@@ -20,6 +20,7 @@ const socket = require("socket.io");
 const http = require("http");
 const AssignmentController = require("./controller/AssignmentController");
 const PostController = require("./controller/PostController");
+const TeamsController = require("./controller/TeamsController");
 var fs = require("fs");
 
 // const cors = require('cors');
@@ -180,6 +181,22 @@ app.post(
   AssignmentController.submitAssignment
 );
 
+app.post(
+  "/api/teams/teamUploadFiles",
+  authenticate,
+  upload.array("files"),
+  (req, res, next) => {
+    File.insertMany(req.files, (err, data) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.locals.files = data;
+        next();
+      }
+    });
+  },
+  TeamsController.uploadFiles
+);
 // Socket
 
 const io = new socket.Server(server, {

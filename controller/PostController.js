@@ -80,12 +80,12 @@ const deletePost = async (req, res) => {
       Team.findById(post.team, "admin")
         .then((team) => {
           if (team.admin.includes(uid, 0)) {
-            var dir = path.join(
+            var srcDel = path.join(
               __dirname,
               `../files/${team._id}/posts/${post._id}`
             );
-            File.deleteMany({ _id : {$in: post.files} } )
-            fs.rmSync(dir, { recursive: true, force: true });
+            File.deleteMany({ _id: { $in: post.files } }).then(()=>{});
+            fs.rmSync(srcDel, { recursive: true, force: true });
             Post.findOne({
               _id: postID,
             })
@@ -105,6 +105,12 @@ const deletePost = async (req, res) => {
                 return;
               });
           } else {
+            var srcDel = path.join(
+              __dirname,
+              `../files/${team._id}/posts/${post._id}`
+            );
+            File.deleteMany({ _id: { $in: post.files } });
+            fs.rmSync(srcDel, { recursive: true, force: true });
             Post.findOne({
               _id: postID,
               createdBy: uid,

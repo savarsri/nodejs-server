@@ -64,12 +64,12 @@ var mkdirectory = (teamID) => {
         if (error) {
           console.log(error);
         } else {
-          console.log("New Directory created successfully !!");
-          console.log(path1)
+          // console.log("New Directory created successfully !!");
+          // console.log(path1)
         }
       });
     } else {
-      console.log("Given Directory already exists !!");
+      // console.log("Given Directory already exists !!");
     }
   });
 

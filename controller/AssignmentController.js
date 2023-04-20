@@ -6,6 +6,17 @@ const fs = require("fs-extra");
 // var fs = require('fs');
 const path = require("path");
 
+const getAllAssignments = async (req, res) => {
+  let uid = req.headers.uid;
+  let assignments = await Assignment.find(
+    {
+      $or: [{ createdBy: uid }, { submittedBy: {$in: uid}  }, { notSubmittedBy: {$in: uid}  }],
+    },
+    "title dueDate _id"
+  ).sort({ dueDate: 1 });
+  res.status(200).json(assignments);
+};
+
 const getAssignment = (req, res) => {
   let uid = req.headers.uid;
   let assignmentID = req.body.assignmentID;
@@ -176,36 +187,26 @@ const updateAssignment = (req, res) => {
 const deleteAssignment = (req, res) => {
   let uid = req.headers.uid;
   let assignmentId = req.body.assignmentId;
-  User.findById(uid).then((user) => {
-    Team.findOne({ code }, "id admin", function (err, docs) {
-      if (err) {
-        res.status(500).json({
-          error: "Error getting teams!",
+  Assignment.findById(
+    { _id: assignmentId, createdBy: uid },
+    "_id team files"
+  ).then((docs) => {
+    var srcDel = path.join(
+      __dirname,
+      `../files/${docs.team}/assignments/${docs._id}`
+    );
+    Team.findByIdAndUpdate(docs.team, {
+      $pull: { assignment: assignmentId },
+    }).then(() => {
+      File.deleteMany({ _id: { $in: docs.files } }).then(() => {
+        fs.rmSync(srcDel, { recursive: true, force: true });
+        Assignment.findByIdAndDelete(assignmentId).then(() => {
+          res.status(200).json({
+            code: 200,
+            message: "Assignment deleted",
+          });
         });
-        return;
-      }
-      if (!user.teams.includes(docs.id, 0)) {
-        return;
-      }
-      if (!docs.admin.includes(user.id, 0)) {
-        return;
-      }
-      let teamID = docs.id;
-      Assignment.findByIdAndDelete(assignmentId)
-        .then(() => {
-          Team.findByIdAndUpdate(teamID, {
-            $pull: { assignment: assignmentId },
-          })
-            .then(() => {
-              res.status(200);
-            })
-            .catch((error) => {
-              res.status(500).json(error);
-            });
-        })
-        .catch(() => {
-          res.status(500);
-        });
+      });
     });
   });
 };
@@ -248,29 +249,29 @@ const unSubmitAssignment = (req, res) => {
   Assignment.findByIdAndUpdate(req.headers.assid, {
     $pull: { submittedBy: req.headers.uid },
     $push: { notSubmittedBy: req.headers.uid },
-  }).then((assignment)=>{
+  }).then((assignment) => {
     var des = path.join(
       __dirname,
       `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
     );
-    File.deleteMany({destination: des}).then(()=>{
+    File.deleteMany({ destination: des }).then(() => {
       fs.rmSync(des, { recursive: true, force: true });
       res.status(200).json({
         code: 200,
         message: "Assignment unsubmitted",
       });
-    })
+    });
   });
 };
 
 const gradeAssignment = (req, res) => {};
 
-const testUpload = (req, res, next) => {
-  console.log(req.body);
-  console.log("hello");
-  next();
-  // console.log(req.headers);
-};
+// const testUpload = (req, res, next) => {
+//   console.log(req.body);
+//   console.log("hello");
+//   next();
+//   // console.log(req.headers);
+// };
 
 module.exports = {
   createAssignment,
@@ -280,5 +281,5 @@ module.exports = {
   unSubmitAssignment,
   gradeAssignment,
   getAssignment,
-  testUpload,
+  getAllAssignments,
 };
