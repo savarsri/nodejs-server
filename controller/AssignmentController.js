@@ -32,19 +32,26 @@ const getAssignment = (req, res) => {
             assignment,
             isAdmin: true,
           });
-        } else if (assignment.submittedBy.includes(uid)) {
-          res.status(200).json({
-            assignment: {
-              _id: assignment._id,
-              title: assignment.title,
-              description: assignment.description,
-              dueDate: assignment.dueDate,
-              grade: assignment.grade,
-              files: assignment.files,
-              submitted: true,
-            },
-            isAdmin: false,
-          });
+        } else if (assignment.submittedBy.filter(e => e._id == uid).length > 0) {
+          var des = path.join(
+            __dirname,
+            `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
+          );
+          File.find({destination : des},"_id originalname mimetype").then((files)=>{
+            res.status(200).json({
+              assignment: {
+                _id: assignment._id,
+                title: assignment.title,
+                description: assignment.description,
+                dueDate: assignment.dueDate,
+                grade: assignment.grade,
+                files: assignment.files,
+                submitted: true,
+              },
+              files,
+              isAdmin: false,
+            });
+          })
         } else {
           res.status(200).json({
             assignment: {

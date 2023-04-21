@@ -16,7 +16,7 @@ const getTeams = async (req, res) => {
 
   await User.findById(uid)
     .then((user) => {
-      userTeamsID = user.teams;
+      userTeamsID = user?.teams;
     })
     .catch((error) => {
       console.log(error);
@@ -70,7 +70,6 @@ const createTeams = (req, res) => {
     .save()
     .then((team) => {
       filess.mkdirectory(team.id);
-
       User.findByIdAndUpdate(uid, { $push: { teams: team } })
         .then((data) => {
           // Do something with data
@@ -250,7 +249,6 @@ const getTeamPosts = (req, res) => {
         });
         return;
       }
-      console.log(docs);
       if (docs?.admin.includes(user.id, 0)) {
         isAdmin = true;
       }
@@ -297,7 +295,7 @@ const getTeamAssignments = (req, res) => {
         if (docs?.admin.includes(user.id, 0)) {
           isAdmin = true;
         }
-        let assignments = docs.assignment;
+        let assignments = docs?.assignment;
         if (assignments == []) {
           res.status(200).json({
             assignments: [],

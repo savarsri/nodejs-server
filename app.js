@@ -117,7 +117,7 @@ app.get("/api/download", authenticate, function (req, res) {
   File.findById(req.headers.fileid).then((file) => {
     res.download(
       file.path,
-      file.originalname, // Remember to include file extension
+      file.originalname,
       (err) => {
         if (err) {
           res.send({
