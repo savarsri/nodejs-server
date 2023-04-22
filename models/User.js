@@ -34,6 +34,10 @@ const userSchema = new Schema(
       type: String,
       default: image,
     },
+    role:{
+      type: String,
+      default: "user"
+    },
     teams: {
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Team",
