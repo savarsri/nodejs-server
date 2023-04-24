@@ -107,7 +107,6 @@ app.get("/", function (req, res) {
 
 app.use("/api/teams", authenticate, TeamsRoute);
 app.use("/api/auth", AuthRoute);
-app.use("/api/employee", EmployeeRoute);
 app.use("/api/assignment", authenticate, AssignmentRoute);
 app.use("/api/post", authenticate, PostRoute);
 app.use("/api/chat", authenticate, ChatRoute);
