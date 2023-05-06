@@ -241,70 +241,70 @@ io.on("connection", (socket) => {
   });
 });
 
-async function importExcelData2MongoDB(filePath) {
-  // -> Read Excel File to Json Data
-  const excelData = excelToJson({
-    sourceFile: filePath,
-    sheets: [
-      {
-        // Excel Sheet Name
-        name: "User",
-        // Header Row -> be skipped and will not be present at our result object.
-        header: {
-          rows: 1,
-        },
-        // Mapping columns to keys
-        columnToKey: {
-          A: "name",
-          B: "email",
-          C: "password",
-        },
-      },
-    ],
-  });
+// async function importExcelData2MongoDB(filePath) {
+//   // -> Read Excel File to Json Data
+//   const excelData = excelToJson({
+//     sourceFile: filePath,
+//     sheets: [
+//       {
+//         // Excel Sheet Name
+//         name: "User",
+//         // Header Row -> be skipped and will not be present at our result object.
+//         header: {
+//           rows: 1,
+//         },
+//         // Mapping columns to keys
+//         columnToKey: {
+//           A: "name",
+//           B: "email",
+//           C: "password",
+//         },
+//       },
+//     ],
+//   });
 
-  const temp = Object.values(excelData);
-  var data = temp[0];
-  delete temp;
+//   const temp = Object.values(excelData);
+//   var data = temp[0];
+//   delete temp;
 
-  // data = await createHashedPass(data);
-  console.log(data);
-  // Insert Json-Object to MongoDB
+//   // data = await createHashedPass(data);
+//   console.log(data);
+//   // Insert Json-Object to MongoDB
 
-  await addUsers(data);
+//   await addUsers(data);
 
-  // fs.unlinkSync(filePath);
-}
+//   // fs.unlinkSync(filePath);
+// }
 
-async function createHashedPass(data) {
-  for (let index = 0; index < data.length; index++) {
-    const pass = bcrypt.hash(
-      data[index].password,
-      10,
-      function (err, hashedPass) {
-        if (err) {
-          res.json({
-            error: err,
-          });
-        } else {
-          return hashedPass;
-        }
-      }
-    );
-    data[index].password = pass;
-  }
-  return data;
-}
+// async function createHashedPass(data) {
+//   for (let index = 0; index < data.length; index++) {
+//     const pass = bcrypt.hash(
+//       data[index].password,
+//       10,
+//       function (err, hashedPass) {
+//         if (err) {
+//           res.json({
+//             error: err,
+//           });
+//         } else {
+//           return hashedPass;
+//         }
+//       }
+//     );
+//     data[index].password = pass;
+//   }
+//   return data;
+// }
 
-async function addUsers(data) {
-  User.insertMany(data, (err, data) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("hello");
-      // res.redirect("/");
-    }
-  });
-}
+// async function addUsers(data) {
+//   User.insertMany(data, (err, data) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log("hello");
+//       // res.redirect("/");
+//     }
+//   });
+// }
 
 // module.exports = {upload}
