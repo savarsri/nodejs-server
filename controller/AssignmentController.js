@@ -14,7 +14,7 @@ const getAllAssignments = async (req, res) => {
     },
     "title dueDate _id"
   ).sort({ dueDate: 1 });
-  res.status(200).json(assignments);
+  res.status(200).json({assignments});
 };
 
 const getAssignment = (req, res) => {
@@ -84,6 +84,7 @@ const createAssignment = (req, res, next) => {
   let assignmentDueDate = req.body.dueDate;
   let assignmentGrade = req.body.grade;
   let assignmentFiles = res.locals.files;
+  console.log(assignmentFiles);
 
   User.findById(uid).then((user) => {
     Team.findById(teamID, "id admin members", function (err, docs) {
@@ -147,6 +148,7 @@ const createAssignment = (req, res, next) => {
             });
         })
         .catch((error) => {
+          console.log(error);
           res.status(500).json(error);
         });
     });

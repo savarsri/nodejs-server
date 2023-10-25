@@ -79,7 +79,7 @@ const login = async (req, res) => {
           }
         });
       } else {
-        res.status(200).json({
+        res.status(401).json({
           code: 404,
           message: "no user found",
         });
@@ -95,17 +95,17 @@ const login = async (req, res) => {
 };
 
 const searchUser = async (req, res) => {
-  // const { search } = req.query;
+  const { search } = req.query;
 
-  // const user = await User.find({
-  //   name: { $regex: search, $options: "i" },
-  // }).select("avatar _id email name");
+  const user = await User.find({
+    name: { $regex: search ?? "", $options: "i" },
+  }).select("avatar _id email name").limit(10);
 
-    // res.status(200).json(user);
+    res.status(200).json(user);
 
-    User.find({},'avatar _id email name').then((users)=>{
-      res.status(200).json(users)
-    })
+    // User.find({},'avatar _id email name').then((users)=>{
+    //   res.status(200).json(users)
+    // })
 };
 
 // const searchUser = async (req, res) => {

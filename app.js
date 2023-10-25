@@ -71,8 +71,10 @@ const app = express();
 const server = http.createServer(app);
 
 const cors = require("cors");
+const { log } = require("console");
 const corsOptions = {
-  origin: "*",
+  origin: "http://localhost:3001",
+  // allowedHeaders:("Content-type ,authorization"),
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
@@ -113,6 +115,7 @@ app.use("/api/chat", authenticate, ChatRoute);
 app.use("/api/message", authenticate, MessageRoute);
 
 app.get("/api/download", authenticate, function (req, res) {
+  console.log(req.headers);
   File.findById(req.headers.fileid).then((file) => {
     res.download(
       file.path,

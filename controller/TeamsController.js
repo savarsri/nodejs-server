@@ -24,23 +24,17 @@ const getTeams = async (req, res) => {
 
   // Fetchs and sends Team details (name,code,channels)
 
-  Team.find(
+  await Team.find(
     {
       _id: {
         $in: userTeamsID,
       },
     },
-    "name code _id",
-    function (err, docs) {
-      if (err) {
-        res.status(500).json({
-          error: "Error getting teams!",
-        });
-        return;
-      }
-      res.status(200).json(docs);
-    }
-  );
+    "name code _id createdBy"
+  ).populate("createdBy", "name").then((teams)=>{
+    res.status(200).json(
+      teams)
+  });
 };
 
 function makeid(length) {
@@ -345,14 +339,13 @@ const getTeamMembers = async (req, res) => {
 
 const getTeamFiles = async (req, res) => {
   let uid = req.headers.uid;
-  let teamID = req.headers.teamid;
+  let teamID = req.body.teamid;
   let files = await Team.find(
-    { _id: teamID, $or: [{ admin: uid }, { members: {$in: uid}  }], },
+    { _id: teamID, $or: [{ admin: uid }, { members: { $in: uid } }] },
     "_id files"
   )
     .populate({ path: "files", select: "_id originalname mimetype" })
     .sort({ createdAt: 1 });
-
 
   res.status(200).json(files);
 };
@@ -379,7 +372,7 @@ const uploadFiles = (req, res) => {
       });
     })
     .catch((error) => {
-      console.log(error)
+      console.log(error);
       res.status(500).json({
         error,
       });
@@ -389,7 +382,7 @@ const uploadFiles = (req, res) => {
 const deleteFile = (req, res) => {
   let teamID = req.headers.teamid;
   let fileID = req.headers.fileid;
-  Team.findByIdAndUpdate(teamID,{files:{$pull : fileID}}).then((team)=>{
+  Team.findByIdAndUpdate(teamID, { files: { $pull: fileID } }).then((team) => {
     File.findById(fileID, "path").then((file) => {
       fs.unlink(file.path, (err) => {
         if (err) throw err;
@@ -401,7 +394,7 @@ const deleteFile = (req, res) => {
         });
       });
     });
-  })
+  });
 };
 
 module.exports = {
@@ -416,5 +409,5 @@ module.exports = {
   addmember,
   removeMember,
   uploadFiles,
-  deleteFile
+  deleteFile,
 };

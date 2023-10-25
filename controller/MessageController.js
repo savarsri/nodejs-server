@@ -41,6 +41,7 @@ const allMessages = async (req, res) => {
     .populate("sender", "avatar email _id")
     .populate("chat");
 
+    // console.log(getMessage);
   res.status(200).json(getMessage);
 
   // res.status(200).json({
