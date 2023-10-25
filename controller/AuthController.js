@@ -2,6 +2,8 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// Function for Register
+
 const register = async (req, res) => {
   let email = req.body.email;
   const exists = await User.exists({ email });
@@ -20,7 +22,7 @@ const register = async (req, res) => {
       let user = new User({
         name: req.body.name,
         email: req.body.email,
-        age: req.body.age,
+        // age: req.body.age,
         password: hashedPass,
       });
       user
@@ -28,6 +30,7 @@ const register = async (req, res) => {
         .then((user) => {
           res.status(200).json({
             code: 200,
+            user,
             message: "user added successfully",
           });
         })
@@ -41,7 +44,7 @@ const register = async (req, res) => {
     });
   }
 };
-
+// Function for login
 const login = async (req, res) => {
   let email = req.body.email;
   await User.findOne({ email })
@@ -72,14 +75,14 @@ const login = async (req, res) => {
               // refreshtoken
             });
           } else {
-            res.status(200).json({
+            res.status(401).json({
               code: 401,
               message: "password does not match",
             });
           }
         });
       } else {
-        res.status(401).json({
+        res.status(404).json({
           code: 404,
           message: "no user found",
         });
@@ -93,6 +96,8 @@ const login = async (req, res) => {
       });
     });
 };
+
+// Function for searching users
 
 const searchUser = async (req, res) => {
   const { search } = req.query;

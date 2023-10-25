@@ -23,12 +23,7 @@ const PostController = require("./controller/PostController");
 const TeamsController = require("./controller/TeamsController");
 var fs = require("fs");
 
-// const cors = require('cors');
-// const helmet = require('helmet');
-// const xss = require('xss');
-// const mongoSanitize = require('mongo-sanitize');
-// import {importExcelData2MongoDB} from "./middleware/excelupload"
-
+// Define storage settings for file uploads using multer
 var storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const directory = path.join(
@@ -36,6 +31,7 @@ var storage = multer.diskStorage({
       `/temp/uploads/${req.headers.uploadid}`
     );
 
+    // Ensure the destination directory exists, creating it if needed
     if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory, { recursive: true });
     }
@@ -48,8 +44,7 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage });
 
-// Connection with mongoDB database
-
+// Connection with MongoDB database
 mongoose.set("strictQuery", false);
 mongoose.connect("mongodb://127.0.0.1:27017/testdb", {
   useNewUrlParser: true,
@@ -57,8 +52,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/testdb", {
 });
 const db = mongoose.connection;
 
-// mongoDB database connection error handing
-
+// Handle MongoDB database connection errors
 db.on("error", (err) => {
   console.log(err);
 });
@@ -74,39 +68,32 @@ const cors = require("cors");
 const { log } = require("console");
 const corsOptions = {
   origin: "http://localhost:3001",
-  // allowedHeaders:("Content-type ,authorization"),
-  credentials: true, //access-control-allow-credentials:true
+  credentials: true, // Access control for credentials
   optionSuccessStatus: 200,
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // Enable CORS with specified options
 
 app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
-// app.use(upload.array());
-// app.use(cors);
-// app.use(helmet);
-// app.use(xss);
-// app.use(mongoSanitize);
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static("uploads")); // Serve uploaded files
+
 const PORT = process.env.PORT || 3000;
 
-// Server listening port
-
+// Server listening on the specified port
 app.listen(PORT, () => {
   console.log("server is running on port 3000");
 });
 
 // Admin panel
-
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "./admin-panel/login.html"));
-  // res.sendFile(path.join(__dirname, "./admin-panel/admin.css"));
 });
 
+// Define routes for various API endpoints and apply authentication middleware
 app.use("/api/teams", authenticate, TeamsRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/assignment", authenticate, AssignmentRoute);
@@ -114,6 +101,7 @@ app.use("/api/post", authenticate, PostRoute);
 app.use("/api/chat", authenticate, ChatRoute);
 app.use("/api/message", authenticate, MessageRoute);
 
+// Endpoint for downloading a file
 app.get("/api/download", authenticate, function (req, res) {
   console.log(req.headers);
   File.findById(req.headers.fileid).then((file) => {
@@ -132,6 +120,7 @@ app.get("/api/download", authenticate, function (req, res) {
   });
 });
 
+// Endpoint for creating assignments with file uploads
 app.post(
   "/api/assignment/createAssignment",
   authenticate,
@@ -149,6 +138,7 @@ app.post(
   AssignmentController.createAssignment
 );
 
+// Endpoint for creating posts with file uploads
 app.post(
   "/api/post/createPost",
   authenticate,
@@ -166,6 +156,7 @@ app.post(
   PostController.createPost
 );
 
+// Endpoint for submitting assignments with file uploads
 app.post(
   "/api/assignment/submitAssignment",
   authenticate,
@@ -183,6 +174,7 @@ app.post(
   AssignmentController.submitAssignment
 );
 
+// Endpoint for uploading files in teams
 app.post(
   "/api/teams/teamUploadFiles",
   authenticate,
@@ -199,8 +191,8 @@ app.post(
   },
   TeamsController.uploadFiles
 );
-// Socket
 
+// Socket configuration
 const io = new socket.Server(server, {
   pingTimeout: 60000,
   cors: {
@@ -213,7 +205,7 @@ io.listen(9000, () => {
 });
 
 io.on("connection", (socket) => {
-  //connected to correct id
+  // Connected to the correct user's room
   socket.on("setup", (userData) => {
     socket.join(userData._id);
 
@@ -239,75 +231,8 @@ io.on("connection", (socket) => {
     });
   });
 
+  // Cleanup when the socket disconnects
   socket.off("setup", () => {
     socket.leave(userData._id);
   });
 });
-
-// async function importExcelData2MongoDB(filePath) {
-//   // -> Read Excel File to Json Data
-//   const excelData = excelToJson({
-//     sourceFile: filePath,
-//     sheets: [
-//       {
-//         // Excel Sheet Name
-//         name: "User",
-//         // Header Row -> be skipped and will not be present at our result object.
-//         header: {
-//           rows: 1,
-//         },
-//         // Mapping columns to keys
-//         columnToKey: {
-//           A: "name",
-//           B: "email",
-//           C: "password",
-//         },
-//       },
-//     ],
-//   });
-
-//   const temp = Object.values(excelData);
-//   var data = temp[0];
-//   delete temp;
-
-//   // data = await createHashedPass(data);
-//   console.log(data);
-//   // Insert Json-Object to MongoDB
-
-//   await addUsers(data);
-
-//   // fs.unlinkSync(filePath);
-// }
-
-// async function createHashedPass(data) {
-//   for (let index = 0; index < data.length; index++) {
-//     const pass = bcrypt.hash(
-//       data[index].password,
-//       10,
-//       function (err, hashedPass) {
-//         if (err) {
-//           res.json({
-//             error: err,
-//           });
-//         } else {
-//           return hashedPass;
-//         }
-//       }
-//     );
-//     data[index].password = pass;
-//   }
-//   return data;
-// }
-
-// async function addUsers(data) {
-//   User.insertMany(data, (err, data) => {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       console.log("hello");
-//       // res.redirect("/");
-//     }
-//   });
-// }
-
-// module.exports = {upload}

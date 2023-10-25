@@ -8,12 +8,12 @@ const filess = require("../middleware/upload");
 const fs = require("fs-extra");
 const path = require("path");
 
+// Function to retrieve a list of teams a user is part of
 const getTeams = async (req, res) => {
   let uid = req.headers.uid;
   let userTeamsID = [];
 
-  // Find list of objectID's of teams the user is in
-
+  // Find the list of object IDs of teams the user is in
   await User.findById(uid)
     .then((user) => {
       userTeamsID = user?.teams;
@@ -22,8 +22,7 @@ const getTeams = async (req, res) => {
       console.log(error);
     });
 
-  // Fetchs and sends Team details (name,code,channels)
-
+  // Fetch and send Team details (name, code, channels)
   await Team.find(
     {
       _id: {
@@ -37,6 +36,7 @@ const getTeams = async (req, res) => {
   });
 };
 
+// Function to generate a random code
 function makeid(length) {
   let result = "";
   const characters =
@@ -50,6 +50,7 @@ function makeid(length) {
   return result;
 }
 
+// Function to create a new team
 const createTeams = (req, res) => {
   let uid = req.headers.uid;
   code = makeid(6);
@@ -83,12 +84,13 @@ const createTeams = (req, res) => {
       res.status(500).json({
         code: 500,
         error,
-        message: "error occured",
+        message: "error occurred",
       });
       delete team;
     });
 };
 
+// Function to join an existing team
 const joinTeam = (req, res) => {
   let uid = req.headers.uid;
   let code = req.body.code;
@@ -114,6 +116,7 @@ const joinTeam = (req, res) => {
     });
 };
 
+// Function to add a member to a team
 const addmember = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
@@ -152,6 +155,7 @@ const addmember = (req, res) => {
     });
 };
 
+// Function to remove a member from a team
 const removeMember = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
@@ -189,10 +193,12 @@ const removeMember = (req, res) => {
     });
 };
 
+// Function to get details of a team
 const getTeamDetails = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
   let isAdmin = false;
+
   User.findById(uid).then((user) => {
     Team.findById(teamID)
       .then((team) => {
@@ -209,27 +215,10 @@ const getTeamDetails = (req, res) => {
       .catch((error) => {
         res.status(500).json({ error });
       });
-
-    // Team.findById(teamID, "name code admin members id", function (err, docs) {
-    //   if (err) {
-    //     res.status(500).json({
-    //       error: "Error getting teams!",
-    //     });
-    //     return;
-    //   }
-    //   if (!user.teams.includes(docs.id, 0)) {
-    //     return;
-    //   }
-    //   if (
-    //     !(docs.admin.includes(user.id, 0) || docs.members.includes(user.id, 0))
-    //   ) {
-    //     return;
-    //   }
-    //   res.status(200).json(docs);
-    // });
   });
 };
 
+// Function to get posts of a team
 const getTeamPosts = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
@@ -270,6 +259,7 @@ const getTeamPosts = (req, res) => {
   });
 };
 
+// Function to get assignments of a team
 const getTeamAssignments = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
@@ -314,6 +304,7 @@ const getTeamAssignments = (req, res) => {
   });
 };
 
+// Function to get members of a team
 const getTeamMembers = async (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
@@ -337,6 +328,7 @@ const getTeamMembers = async (req, res) => {
   });
 };
 
+// Function to get files associated with a team
 const getTeamFiles = async (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamid;
@@ -350,6 +342,7 @@ const getTeamFiles = async (req, res) => {
   res.status(200).json(files);
 };
 
+// Function to upload files to a team
 const uploadFiles = (req, res) => {
   let teamID = req.body.teamID;
   let files = res.locals.files;
@@ -379,6 +372,7 @@ const uploadFiles = (req, res) => {
     });
 };
 
+// Function to delete a file from a team's files
 const deleteFile = (req, res) => {
   let teamID = req.headers.teamid;
   let fileID = req.headers.fileid;
