@@ -46,7 +46,7 @@ var upload = multer({ storage: storage });
 
 // Connection with MongoDB database
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1:27017/testdb", {
+mongoose.connect("mongodb+srv://sakshamgupta912:oSMxD60kID1g6Gwz@collabsphere.frcm25p.mongodb.net/testDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

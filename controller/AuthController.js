@@ -60,7 +60,7 @@ const login = async (req, res) => {
           }
           if (result) {
             delete (password);
-            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "24h"});
+            let token = jwt.sign({ name: user.employeeID }, "AzQPI!", {expiresIn: "1000h"});
             // let refreshtoken = jwt.sign({ name: user.employeeID }, 'secretrefreshtoken', {expiresIn: "24h"});
             // res.cookie('jwt',token, { httpOnly: false, secure: false, maxAge: 3600000 });
             res.status(200).json({
