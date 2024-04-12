@@ -22,8 +22,8 @@ const getAssignment = (req, res) => {
   let assignmentID = req.body.assignmentID;
   User.findById(uid).then((user) => {
     Assignment.findById(assignmentID)
-      .populate({ path: "submittedBy", select: "name email avatar _id" })
-      .populate({ path: "notSubmittedBy", select: "name email avatar _id" })
+      .populate({ path: "submittedBy", select: "name email _id" })
+      .populate({ path: "notSubmittedBy", select: "name email _id" })
       .populate({ path: "files", select: "_id originalname mimetype" })
       .sort({ updatedAt: -1 })
       .then((assignment) => {
@@ -83,7 +83,7 @@ const createAssignment = (req, res, next) => {
   let assignmentDescription = req.body.description;
   let assignmentDueDate = req.body.dueDate;
   let assignmentGrade = req.body.grade;
-  let assignmentFiles = res.locals.files;
+  let assignmentFiles = [] || res.locals.files ;
   console.log(assignmentFiles);
 
   User.findById(uid).then((user) => {
