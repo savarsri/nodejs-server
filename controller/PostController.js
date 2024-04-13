@@ -9,7 +9,7 @@ const createPost = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
   let content = req.body.content;
-  let files = res.locals.files;
+  let files = [] || res.locals.files;
 
   let post = new Post({
     content: content,
