@@ -165,6 +165,7 @@ const addmember = (req, res) => {
   let uid = req.headers.uid;
   let teamID = req.body.teamID;
   let member = req.body.member;
+  console.log(req.body);
 
   Team.findOne({ _id: teamID })
     .then((team) => {
@@ -174,7 +175,7 @@ const addmember = (req, res) => {
         });
       }
 
-      if (team.admin.includes(uid)) {
+      if (team.admin.includes(member[0])) {
         return res.status(200).json({
           error: "Admin cannot be added as a member",
         });
