@@ -274,7 +274,7 @@ const addmember = (req, res) => {
 
 const removeMember = (req, res) => {
   let uid = req.headers.uid;
-  let teamID = req.headers.teamID;
+  let teamID = req.headers.teamid;
   let member = req.headers.member;
 
   // Find the team and check if the user is the admin
@@ -285,32 +285,32 @@ const removeMember = (req, res) => {
           error: "Team not found or you are not the admin of the team",
         });
       }
-      // Remove the member(s) from the team
+      // Remove the member from the team
       Team.updateOne(
         { _id: teamID },
-        { $pull: { members: { $in: member } } }
+        { $pull: { members: member } } // Remove single member
       )
         .then(() => {
-          // Remove the team from the member(s)'s list of teams
-          User.updateMany(
-            { _id: { $in: member } },
+          // Remove the team from the member's list of teams
+          User.updateOne(
+            { _id: member }, // Update for single member
             { $pull: { teams: teamID } }
           )
             .then(() => {
               res.status(200).json({
                 code: 200,
-                message: "Members removed successfully",
+                message: "Member removed successfully",
               });
             })
             .catch((error) => {
               res.status(500).json({
-                error: "Failed to remove members from users",
+                error: "Failed to remove member from user",
               });
             });
         })
         .catch((error) => {
           res.status(500).json({
-            error: "Failed to remove members from team",
+            error: "Failed to remove member from team",
           });
         });
     })
@@ -320,6 +320,7 @@ const removeMember = (req, res) => {
       });
     });
 };
+
 
 
 // Function to get details of a team
