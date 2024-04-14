@@ -67,7 +67,7 @@ const server = http.createServer(app);
 const cors = require("cors");
 const { log } = require("console");
 const corsOptions = {
-  origin: "http://localhost:3001",
+  origin: true,
   credentials: true, // Access control for credentials
   optionSuccessStatus: 200,
 };
