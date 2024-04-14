@@ -83,7 +83,7 @@ const createAssignment = (req, res, next) => {
   let assignmentDescription = req.body.description;
   let assignmentDueDate = req.body.dueDate;
   let assignmentGrade = req.body.grade;
-  let assignmentFiles = [] || res.locals.files;
+  let assignmentFiles = res.locals.files || [];
   console.log(assignmentFiles);
 
   User.findById(uid).then((user) => {
