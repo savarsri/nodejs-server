@@ -8,8 +8,8 @@ const { upload } = require('../middleware/upload');
 
 router.post('/getAssignment', AssignmentController.getAssignment)
 router.get('/assignments', AssignmentController.getAllAssignments)
-router.post('/updateAssignment', AssignmentController.updateAssignment)
+router.put('/updateAssignment', AssignmentController.updateAssignment)
 router.post('/deleteAssignment', AssignmentController.deleteAssignment)
-router.get('/unSubmitAssignment', AssignmentController.unSubmitAssignment)
+router.put('/unSubmitAssignment', AssignmentController.unSubmitAssignment)
 
 module.exports = router 

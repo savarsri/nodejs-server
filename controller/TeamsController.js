@@ -135,7 +135,6 @@ const joinTeam = (req, res) => {
     });
 };
 
-
 // Function to join an existing team
 // const joinTeam = (req, res) => {
 //   let uid = req.headers.uid;
@@ -170,13 +169,13 @@ const addmember = (req, res) => {
   Team.findOne({ _id: teamID })
     .then((team) => {
       if (!team) {
-        return res.status(404).json({
+        return res.status(200).json({
           error: "Team not found",
         });
       }
 
-      if (team.admin === uid) {
-        return res.status(403).json({
+      if (team.admin.includes(uid)) {
+        return res.status(200).json({
           error: "Admin cannot be added as a member",
         });
       }
@@ -186,7 +185,7 @@ const addmember = (req, res) => {
         member.includes(existingMember)
       );
       if (existingMembers.length > 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           error: "Some members already exist in the team",
         });
       }
@@ -201,24 +200,34 @@ const addmember = (req, res) => {
         return User.updateMany(
           { _id: { $in: member } },
           { $addToSet: { teams: teamID } }, // Using $addToSet to avoid duplicates
-        );
-      });
-    })
-    .then(() => {
-      res.status(200).json({
-        code: 200,
-        message: "Members added successfully.",
+        )
+        .then(() => {
+          res.status(200).json({
+            code: 200,
+            message: "Members added successfully.",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(200).json({
+            error: "Failed to update user's team associations",
+          });
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(200).json({
+          error: "Failed to update team members",
+        });
       });
     })
     .catch((error) => {
       console.log(error);
-      res.status(500).json({
+      res.status(200).json({
         error: "Internal server error",
       });
     });
 };
-
-
 
 
 // Function to add a member to a team
@@ -264,8 +273,8 @@ const addmember = (req, res) => {
 
 const removeMember = (req, res) => {
   let uid = req.headers.uid;
-  let teamID = req.body.teamID;
-  let member = req.body.member;
+  let teamID = req.headers.teamID;
+  let member = req.headers.member;
 
   // Find the team and check if the user is the admin
   Team.findOne({ _id: teamID, admin: uid })
@@ -275,7 +284,6 @@ const removeMember = (req, res) => {
           error: "Team not found or you are not the admin of the team",
         });
       }
-
       // Remove the member(s) from the team
       Team.updateOne(
         { _id: teamID },
