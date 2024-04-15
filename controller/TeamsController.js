@@ -20,6 +20,9 @@ const getTeams = async (req, res) => {
     })
     .catch((error) => {
       console.log(error);
+      res.status(500).json({
+        error: "Error Occured. Try Again!",
+      });
     });
 
   // Fetch and send Team details (name, code, channels)
@@ -34,6 +37,11 @@ const getTeams = async (req, res) => {
     .populate("createdBy", "name")
     .then((teams) => {
       res.status(200).json(teams);
+    })
+    .catch((err) => {
+      res.status(500).json({
+        error: "Error Occured. Try Again!",
+      });
     });
 };
 
@@ -96,37 +104,50 @@ const joinTeam = (req, res) => {
   let code = req.body.code;
 
   // Check if the user is already a member of the team
-  Team.findOne({ code, members: uid })
-    .then((existingTeam) => {
-      if (existingTeam) {
-        return res.status(200).json({
-          code: 200,
-          message: "You are already a member of this team",
+  Team.findOne({ code })
+    .then((team) => {
+      if (!team) {
+        return res.status(404).json({
+          error: "Room does not exists!",
         });
-      }
-
-      // If the user is not a member, then proceed to join the team
-      Team.findOneAndUpdate({ code }, { $push: { members: uid } })
-        .then((team) => {
-          // Update user's teams
-          User.findByIdAndUpdate(uid, { $push: { teams: team } })
-            .then((data) => {
-              res.status(200).json({
+      } else {
+        Team.findOne({ code, members: uid })
+          .then((existingTeam) => {
+            if (existingTeam) {
+              return res.status(400).json({
                 code: 200,
-                message: "Team Joined",
+                message: "You are already a member of this team",
               });
-            })
-            .catch((error) => {
-              res.status(500).json({
-                error,
+            }
+            // If the user is not a member, then proceed to join the team
+            Team.findOneAndUpdate({ code }, { $push: { members: uid } })
+              .then((team) => {
+                // Update user's teams
+                User.findByIdAndUpdate(uid, { $push: { teams: team } })
+                  .then((data) => {
+                    res.status(200).json({
+                      code: 200,
+                      message: "Team Joined",
+                    });
+                  })
+                  .catch((error) => {
+                    res.status(500).json({
+                      error,
+                    });
+                  });
+              })
+              .catch((error) => {
+                res.status(500).json({
+                  error,
+                });
               });
+          })
+          .catch((error) => {
+            res.status(500).json({
+              error,
             });
-        })
-        .catch((error) => {
-          res.status(500).json({
-            error,
           });
-        });
+      }
     })
     .catch((error) => {
       res.status(500).json({
@@ -170,13 +191,13 @@ const addmember = (req, res) => {
   Team.findOne({ _id: teamID })
     .then((team) => {
       if (!team) {
-        return res.status(200).json({
+        return res.status(404).json({
           error: "Team not found",
         });
       }
 
       if (team.admin.includes(member[0])) {
-        return res.status(200).json({
+        return res.status(403).json({
           error: "Admin cannot be added as a member",
         });
       }
@@ -186,7 +207,7 @@ const addmember = (req, res) => {
         member.includes(existingMember)
       );
       if (existingMembers.length > 0) {
-        return res.status(200).json({
+        return res.status(400).json({
           error: "Some members already exist in the team",
         });
       }
@@ -196,40 +217,40 @@ const addmember = (req, res) => {
         { _id: teamID },
         { $addToSet: { members: { $each: member } } }, // Using $addToSet to avoid duplicates
         { new: true }
-      ).then((updatedTeam) => {
-        // Update user's team associations
-        return User.updateMany(
-          { _id: { $in: member } },
-          { $addToSet: { teams: teamID } }, // Using $addToSet to avoid duplicates
-        )
-        .then(() => {
-          res.status(200).json({
-            code: 200,
-            message: "Members added successfully.",
-          });
+      )
+        .then((updatedTeam) => {
+          // Update user's team associations
+          return User.updateMany(
+            { _id: { $in: member } },
+            { $addToSet: { teams: teamID } } // Using $addToSet to avoid duplicates
+          )
+            .then(() => {
+              res.status(200).json({
+                code: 200,
+                message: "Members added successfully.",
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+              res.status(500).json({
+                error: "Failed to update user's team associations",
+              });
+            });
         })
         .catch((error) => {
           console.log(error);
-          res.status(200).json({
-            error: "Failed to update user's team associations",
+          res.status(500).json({
+            error: "Failed to update team members",
           });
         });
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(200).json({
-          error: "Failed to update team members",
-        });
-      });
     })
     .catch((error) => {
       console.log(error);
-      res.status(200).json({
+      res.status(500).json({
         error: "Internal server error",
       });
     });
 };
-
 
 // Function to add a member to a team
 // const addmember = (req, res) => {
@@ -321,8 +342,6 @@ const removeMember = (req, res) => {
     });
 };
 
-
-
 // Function to get details of a team
 const getTeamDetails = (req, res) => {
   let uid = req.headers.uid;
@@ -395,43 +414,47 @@ const getTeamAssignments = (req, res) => {
   let teamID = req.body.teamID;
   let isAdmin = false;
 
-  User.findById(uid).then((user) => {
-    Team.findById(
-      teamID,
-      "id admin members assignment",
-      async function (err, docs) {
-        if (err) {
-          res.status(500).json({
-            error: "Error getting teams!",
-          });
-          return;
-        }
-        if (docs?.admin.includes(user.id, 0)) {
-          isAdmin = true;
-        }
-        let assignments = docs?.assignment;
-        if (assignments == []) {
-          res.status(200).json({
-            assignments: [],
-          });
-        } else {
-          let teamAssignments = await Assignment.find(
-            {
-              _id: {
-                $in: assignments,
+  User.findById(uid)
+    .then((user) => {
+      Team.findById(
+        teamID,
+        "id admin members assignment",
+        async function (err, docs) {
+          if (err) {
+            res.status(500).json({
+              error: "Error getting teams!",
+            });
+            return;
+          }
+          if (docs?.admin.includes(user.id, 0)) {
+            isAdmin = true;
+          }
+          let assignments = docs?.assignment;
+          if (assignments == []) {
+            res.status(200).json({
+              assignments: [],
+            });
+          } else {
+            let teamAssignments = await Assignment.find(
+              {
+                _id: {
+                  $in: assignments,
+                },
               },
-            },
-            "title dueDate _id"
-          ).sort({ dueDate: 1 });
+              "title dueDate _id"
+            ).sort({ dueDate: 1 });
 
-          res.status(200).json({
-            teamAssignments,
-            isAdmin,
-          });
+            res.status(200).json({
+              teamAssignments,
+              isAdmin,
+            });
+          }
         }
-      }
-    );
-  });
+      );
+    })
+    .catch((error) => {
+      res.status(500).json(error);
+    });
 };
 
 // Function to get members of a team
@@ -446,16 +469,20 @@ const getTeamMembers = async (req, res) => {
     }
   });
 
-  User.findById(uid).then(async (user) => {
-    let teamMembers = await Team.findById(teamID, "admin members -_id")
-      .populate({ path: "admin", select: "name email _id" })
-      .populate({ path: "members", select: "name email _id" });
-    if (teamMembers.admin.includes(user._id, 0)) {
-      res.status(200).json({ teamMembers, isAdmin });
-    } else {
-      res.status(200).json({ teamMembers, isAdmin });
-    }
-  });
+  User.findById(uid)
+    .then(async (user) => {
+      let teamMembers = await Team.findById(teamID, "admin members -_id")
+        .populate({ path: "admin", select: "name email _id" })
+        .populate({ path: "members", select: "name email _id" });
+      if (teamMembers.admin.includes(user._id, 0)) {
+        res.status(200).json({ teamMembers, isAdmin });
+      } else {
+        res.status(200).json({ teamMembers, isAdmin });
+      }
+    })
+    .catch((error) => {
+      res.status(500).json(error);
+    });
 };
 
 // Function to get files associated with a team

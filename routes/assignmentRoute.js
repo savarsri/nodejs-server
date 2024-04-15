@@ -6,10 +6,10 @@ const { upload } = require('../middleware/upload');
 
 // Assignment functions router set-up 
 
-router.post('/getAssignment', AssignmentController.getAssignment)
-router.get('/assignments', AssignmentController.getAllAssignments)
+router.post('/getAssignment', AssignmentController.getAssignment) //done
+router.get('/assignments', AssignmentController.getAllAssignments) //done
 router.put('/updateAssignment', AssignmentController.updateAssignment)
 router.post('/deleteAssignment', AssignmentController.deleteAssignment)
-router.put('/unSubmitAssignment', AssignmentController.unSubmitAssignment)
+router.put('/unSubmitAssignment', AssignmentController.unSubmitAssignment) //done
 
 module.exports = router 

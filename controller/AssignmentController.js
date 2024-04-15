@@ -10,11 +10,15 @@ const getAllAssignments = async (req, res) => {
   let uid = req.headers.uid;
   let assignments = await Assignment.find(
     {
-      $or: [{ createdBy: uid }, { submittedBy: {$in: uid}  }, { notSubmittedBy: {$in: uid}  }],
+      $or: [
+        { createdBy: uid },
+        { submittedBy: { $in: uid } },
+        { notSubmittedBy: { $in: uid } },
+      ],
     },
     "title dueDate _id"
   ).sort({ dueDate: 1 });
-  res.status(200).json({assignments});
+  res.status(200).json({ assignments });
 };
 
 const getAssignment = (req, res) => {
@@ -32,26 +36,30 @@ const getAssignment = (req, res) => {
             assignment,
             isAdmin: true,
           });
-        } else if (assignment.submittedBy.filter(e => e._id == uid).length > 0) {
+        } else if (
+          assignment.submittedBy.filter((e) => e._id == uid).length > 0
+        ) {
           var des = path.join(
             __dirname,
             `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
           );
-          File.find({destination : des},"_id originalname mimetype").then((files)=>{
-            res.status(200).json({
-              assignment: {
-                _id: assignment._id,
-                title: assignment.title,
-                description: assignment.description,
-                dueDate: assignment.dueDate,
-                grade: assignment.grade,
-                files: assignment.files,
-                submitted: true,
-              },
-              files,
-              isAdmin: false,
-            });
-          })
+          File.find({ destination: des }, "_id originalname mimetype").then(
+            (files) => {
+              res.status(200).json({
+                assignment: {
+                  _id: assignment._id,
+                  title: assignment.title,
+                  description: assignment.description,
+                  dueDate: assignment.dueDate,
+                  grade: assignment.grade,
+                  files: assignment.files,
+                  submitted: true,
+                },
+                files,
+                isAdmin: false,
+              });
+            }
+          );
         } else {
           res.status(200).json({
             assignment: {
@@ -225,52 +233,60 @@ const submitAssignment = (req, res) => {
   Assignment.findByIdAndUpdate(req.body.assignmentID, {
     $push: { submittedBy: req.headers.uid },
     $pull: { notSubmittedBy: req.headers.uid },
-  }).then((assignment) => {
-    var srcDel = path.join(
-      __dirname,
-      `../temp/uploads/${req.headers.uploadid}`
-    );
-
-    for (let index = 0; index < files.length; index++) {
-      var dir = path.join(
+  })
+    .then((assignment) => {
+      var srcDel = path.join(
         __dirname,
-        `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}/${files[index].originalname}`
+        `../temp/uploads/${req.headers.uploadid}`
       );
 
-      var des = path.join(
-        __dirname,
-        `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
-      );
-      fs.move(files[index].path, dir, { overwrite: true });
-      File.findByIdAndUpdate(files[index]._id, {
-        $set: { path: dir, destination: des },
-      }).then(() => {});
-    }
-    res.status(200).json({
-      code: 200,
-      message: "Assignment submitted",
+      for (let index = 0; index < files.length; index++) {
+        var dir = path.join(
+          __dirname,
+          `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}/${files[index].originalname}`
+        );
+
+        var des = path.join(
+          __dirname,
+          `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
+        );
+        fs.move(files[index].path, dir, { overwrite: true });
+        File.findByIdAndUpdate(files[index]._id, {
+          $set: { path: dir, destination: des },
+        }).then(() => {});
+      }
+      res.status(200).json({
+        code: 200,
+        message: "Assignment submitted",
+      });
+      // fs.rmSync(srcDel, { recursive: true, force: true });
+    })
+    .catch((error) => {
+      res.status(500).json(error);
     });
-    // fs.rmSync(srcDel, { recursive: true, force: true });
-  });
 };
 
 const unSubmitAssignment = (req, res) => {
   Assignment.findByIdAndUpdate(req.headers.assid, {
     $pull: { submittedBy: req.headers.uid },
     $push: { notSubmittedBy: req.headers.uid },
-  }).then((assignment) => {
-    var des = path.join(
-      __dirname,
-      `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
-    );
-    File.deleteMany({ destination: des }).then(() => {
-      fs.rmSync(des, { recursive: true, force: true });
-      res.status(200).json({
-        code: 200,
-        message: "Assignment unsubmitted",
+  })
+    .then((assignment) => {
+      var des = path.join(
+        __dirname,
+        `../files/${assignment.team}/assignments/${assignment._id}/uploads/${req.headers.uid}`
+      );
+      File.deleteMany({ destination: des }).then(() => {
+        fs.rmSync(des, { recursive: true, force: true });
+        res.status(200).json({
+          code: 200,
+          message: "Assignment unsubmitted",
+        });
       });
+    })
+    .catch((error) => {
+      res.status(500).json(error);
     });
-  });
 };
 
 const gradeAssignment = (req, res) => {};
